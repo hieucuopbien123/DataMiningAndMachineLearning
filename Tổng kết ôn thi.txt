@@ -1,0 +1,222 @@
+# Tổng kết các thuật toán:
+- Linear regression: regression
+- Nearest neighbor learning: classification, regression
+- Naive Bayer: classification
+- ID3: classification
+- ANN(Perceptron, Back propagation): classification
+- Kmean: clustering
+- Association rule mining: association rule mining
+
+Regression: gán real value cho example
+Classification: gán class label cho example
+Clustering: tự nhóm từng example vào các cluster riêng, mỗi cluster có các example khác nhau
+Association rule mining: tìm tỉ lệ cặp A -> B xảy ra trong data
+
+
+
+# Tổng quan => k đầy đủ thuật toán nào dùng trong TH nào
+-> Giới thiệu
+So sánh DM ML AI; Machine learning process; Underfiting và overfitting; Knowledge discovery process; 6 Evaluation method;
+
+-> Linear regression: regression
+Supervised vs unsupervised learning; Performance evaluation; Cơ chế; Error function; Delta rule and batch update; Điều kiện stop training
+=> đường thẳng, update wi để tìm PT đường thẳng
+
+-> Nearest neighbor learning: classification, regression
+Performance evaluation; Confusion matrix; Precision và Recall; F1 measure; Cơ chế; Lazy learning và eager learning; Tính chất
+=> Chọn k cái gần nhất bằng distance function và lấy majority
+
+-> Naive Bayer: classification
+2 công thức xs; pb probability và hypothesis; Cơ chế; Xử lý xác suất quá nhỏ, xs là 0, thao tác với text; Tính chất
+=> Tính xác suất dùng naive bayes, cái nào xs càng cao thì chọn cái đó
+
+-> ID3: classification
+Tính chất của cây và khi nào dùng; Cách tìm root node bằng Entropy và Gain; 3 cách xử lý overfitting; Xử lý value continuous, missing value, cost khác nhau.
+=> Xây cây từ root đổ đi, chọn root bằng Gain, xây cả cây r prune để tránh overfit
+
+-> ANN(Perceptron, Back propagation): classification
+Tính chất ANN; Cấu trúc của nơ ron; Các loại activation function; General weight learning rule; Perceptron và tính chất; Back progation và tính chất
+=> có nhiều layer, mỗi layer có nhiều nơ ron và nhận input vào cho ra output qua từng layer. Thì ta khởi tạo và update weight của link nối các nơ ron theo hướng giảm error. Từ đó xây được 1 hệ thống các nơ ron
+
+-> Kmean: clustering
+Xử lý lỗi; Hierarchical agglomerative clustering; Điều kiện dừng; Cơ chế; Performance evaluation; Tính chất
+=> chọn k initial centroid và nhét từng cục vào cluster. Cách dùng cây thì gom dần từ leaf tới root.
+
+-> Association rule mining: association rule mining
+Tính chất; Cơ chế; Cải tiến frequent itemset generation
+=> Brute force hoặc frequent item generation, 1 cái duyệt trâu, 1 cái sinh từ từ thỏa mãn support và confidence nhưng rất tốn để dùng. Apriori pruning để giảm số lượng -> xây k = 1 và cứ thế tăng dần và prune
+
+
+# Chi tiết:
+-> Giới thiệu
+--> So sánh DM ML AI: ez
+--> Machine learning process: 3 process
+
+--> Underfiting và overfitting: stop too soon/late
+Overfit gây bởi noise, số lượng training example nhỏ, hàm chuẩn cho training và kém cho future example
+
+--> Knowledge discovery process
+Database -> clean data và tiền xử lý, chọn data(Data warehouse) -> chọn dạng data mining target function -> chọn thuật toán tạo ra được function đó -> exec thuật toán -> biểu diễn visualization và đánh giá kết quả -> discovered knowledge and decision making
+
+--> 6 Evaluation method
+Experimentally hơn analytically; evaluation method là PP đánh giá còn evaluation metrics là tiêu chuẩn đánh giá; testset là thứ giúp đánh giá trained system; training set càng lớn thì performance càng cao, testset càng lớn thì càng đáng tin
+
+Hold-out: chia 2 set tỉ lệ 2/3, 1/3 chẳng hạn => large dataset
+Stratified sampling: trainset và testset có tỉ lệ example each class là như nhau => small or unbalanced
+Repeated hold-out: chọn 1 tỉ lệ random cho trainset từ D và train, lặp nh lần lấy trung bình error value
+Cross-validation k-fold: chia thành k disjoint subset, 1 cho test, k-1 cho train, lặp lại k lần lấy trung bình error value => small to medium dataset
+Cross-validation leave-one-out: chia thành n subset như trên nhưng mỗi set 1 example => very small dataset
+Bootstrap sampling: chọn random example x từ D vào Dtrain(k bỏ x khỏi D), lặp n lần, phần thuộc D mà k thuộc Dtrain là cho vào testset => very small dataset
+
+
+
+# Linear regression
+-> Supervised vs unsupervised learning: ez
+-> Performance evaluation: MAE và RMSE, overall error, accuracy
+-> Cơ chế: Nó quyết định target function là 1 hàm linear cho 1 vector x
+khởi tạo w -> update w theo hướng error giảm dần
+-> Error function: for each training example và entire training set
+
+-> Delta rule and batch update: wi = wi + n(cx-yx)*xi
+  => Mỗi cái wi là 1 thuộc tính, tức ta while nó chưa convergent, for từng training example, với mỗi training example ta for từng thuộc tính i của nó và update wi
+
+-> Điều kiện stop training: error < threshold; error > previous step error; error - previous step error < threshold
+
+
+
+# Nearest neighbor learning
+-> Performance evaluation: accuracy theo hàm identical(o,c)
+-> Confusion matrix: ez
+-> Precision và Recall: Precision tính phần trăm đoán đúng trong các cái đã đoán, recall khác
+-> F1 measure: 2/(1/precision + 1/recall) là harmonic mean, giá trị theo cái nhỏ hơn
+
+-> Cơ chế: dùng distance function 3 loại(real manhatan và euclip, binary 1/0, text), weight 2 loại(importance sqrt(M(wi*(xi-zi)^2)) và distance weight là PT phụ thuộc vào kc v(x,z)) => chọn k lẻ class gần nhất majority
+
+-> Lazy learning và eager learning: ez
+-> Tính chất: Nên dùng khi large set, k có nhiều thuộc tính, tolerate noise tốt, lazy learning
+
+
+
+# Naive Bayer
+-> 2 công thức xs: bayes, conditionally independent
+-> Pb probability và hypothesis: ez
+
+-> Cơ chế: 
+Nó giới thiệu MAP hypothesis là TH cơ bản chỉ có 1 attribute thì xác suất xảy ra h là P(h|D) và áp dụng bayes sẽ ra maxP(D|h).P(h) với mọi h thuộc H thì nó giả sử mọi P(hi) bằng nhau thành ra chỉ còn maxP(D|h) => cứ cái này của hypothesis hi nào lớn nhất là xảy ra case đó
+Ứng dụng vào naive bayes tương tự nhưng D của nó là 1 set các thuộc tính cơ c1,c2,c3,... thì nó dùng thêm conditionally independent để thành maxP(ci).N(P(zi|ci))
+
+-> Xử lý xác suất quá nhỏ, xs là 0, thao tác với text:
+1) P(zi|ci) = 0 thì dùng tỉ lệ (số lượng + xác suất) của (instance của class ci có attribute zi)/(mọi instance của class ci)
+2) N(P(zi|ci)) lim quá nhỏ vì P(zi|zi)=0 => dùng max log(...) vì max A lớn nhất thì max log(A) cũng lớn nhất
+3) Khi làm với text thì công thức P(zi|ci) bị thay đổi vì ta phải extract từ document ra 1 set các keyword {zi} thì công thức đổi thành: tỉ lệ từ zi trong document ci/tỉ lệ mọi từ trong document ci rồi áp dụng tiếp naive bayes như bth
+
+-> Tính chất: computation time linear theo số attribute và size of docs nên dùng đc với số lượng attr lớn
+
+
+
+# ID3
+-> Tính chất của cây và khi nào dùng: DT có target function là 1 cây. Internal node là 1 attribute có branch là giá trị của attribute và leaf là class label => nhiệm vụ là xây cây. Cơ chế nó xây từng node của cây bắt đầu từ node root và chạy recursive tương tự xây từng con một
+
+-> Cách tìm root node bằng Entropy và Gain: Để tìm node root trong mỗi lần thì: tính entropy(S)=-p1.log2(p1)-p2.log2(p2) là entropy của tập S và p1 là tỉ lệ "đúng", p2 là tỉ lệ "sai" trong tập S => tính InformationGain(S,A)=entropy(S)-M(Sv/S*Entropy(Sv)) để so sánh với từng thuộc tính A chọn ra cái nào có IG(S,A) lớn nhất là node root tiếp theo.
+Sv/S là tỉ lệ trong S có giá trị A=v / S và Entropy(Sv) là entropy trong tập Sv với p1 là tỉ lệ trong tập Sv mà "đúng", p2 là tỉ lệ trong tập Sv là "sai"
+
+-> 3 cách xử lý overfitting: dừng đúng lúc; xây cả cây rồi xóa dần: reduced-error pruning và rule post-pruning
+Reduced-error pruning: remove dần node nếu performance k tệ hơn ban đầu ở validation set.
+Rule post-pruning: xây DT perfectly fit trainset, chuyển DT sang rule, reduce each rule bằng cách bỏ từng cục if
+
+-> Xử lý value continuous missing value, cost khác nhau: Continuous-valued attributes nó phải chuyển sang đúng sai binary value, khi đó với các giá trị có được của training set, nó phải tìm threshold là trung điểm giữa các mốc, với các threshold đó chỉ chọn threshold nào có Gain lớn nhất
+Dùng Gain chưa đúng lắm VD Date k nên làm root vì quá nhiều nhánh, dùng GainRatio(S,A)=Gain(S,A)/SplitInformation(S,A) với SplitInformation(S,A)=-M(v thuộc Values(A))(Sv/S*log2(Sv/S)) => giúp xóa bỏ hiệu ảnh hưởng của multi-value attribute => chỉ biết là có cách split information để hủy diệt multi value attribute chứ nhớ thế éo được công thức
+Missing-valued attributes: VD xa=null/undefined thì attribute A có frequent vào value nào nhiều nhất thì lấy value đó trong example của Sn; chuẩn hơn là xét trong example of Sn mà có cùng class label node hiện tại; chơi tỉ lệ VD example x missing value of A nhưng có 4 example có A=1, 6 example A=0 thì dùng xs A=1 thì p(xa)=0.4, A=0 thì p(xa)=0.6 và dùng tiếp tính information gain
+Cx có công thức thay đổi để xử lý các attribute có cost khác nhau chứ kp độ ưu tiên attr nào cx như nhau
+
+
+
+# ANN(Perceptron, Back propagation)
+-> Cấu trúc của nơ ron: input signal, weight, net input, activation function, output
+-> Các loại activation function: hard limiter 0/1, threshold logic như hard limiter có đoạn linear ở giữa, sigmoidal continuous luôn, hyperbolic tangent giống sigmoidal, rectified linear unit thì max(0, Net)
+-> General weight learning rule: có 2 loại parameter learning(time weight) và structure learning(tìm structure) thì cái này thuộc param learning
+delta(w(t))=n.r(t).x(t)=n.g(w(t),x(t),d(t)).x(t) với w: weight vector, n: learning rate, r: learning signal, x: input, d: expected output
+
+-> Perceptron và tính chất:
+1 neuron, hard limiter
+Nó tương tự là xây weight vector w để chỉnh Net(w,x) tăng hay giảm. Nó k chơi được khác linear nên cần delta rule dùng gradient descent
+Error function: 1/2*M(d-out)^2
+Gradient descent nó chỉ thay đổi công thức delta(w) để update w
+
+-> Back progation và tính chất:
+Dùng multi layer ANN mà non linear function thì phải dùng back propagation và điều kiện là hàm activation function có đạo hàm là continuous
+Forward propagation cứ lồng f(Net(M(w.x)))
+Tính error như bth E(w) để dùng nó back propagation để update -> công thức gradient phức tạp -> error signal -> nó tính ra 2 công thức error signal at hidden layer và error signal at output layer nhưng chung quy lại thì weight vẫn được update local, chỉ cần 2 đầu link
+Cơ chế: forward từ đầu đến cuối tính Output từng node -> quay ngược về tính error signal từng node -> forward lần nữa update weight dựa vào error signal
+
+Weight khởi tạo nhỏ và random vì lớn sẽ bị saturate
+Khởi tạo learning rate nhỏ thì process dài, lớn thì quá mất giá trị convergence, nó thg đc chọn experimentally. Good learning rate ban đầu có thể trở nên tệ về sau nên cần có dynamic. 
+Gradient descent sẽ chậm nếu learning rate n nhỏ, dao động k cố định nếu n lớn. Để giảm giao động nó dùng thêm momentum trong công thức tính delta(w)
+Số lượng nơ ron trong hidden layer cũng chọn bằng thực nghiệm. Bắt đầu với số lượng nhỏ, nếu ANN k converge thì thêm nơ ron vào hidden layer, nếu converge thì giảm đi
+=> weight nhỏ và random
+=> learning rate nhỏ, dynamic và dùng thêm momentum
+=> số lượng now ron nhỏ và tăng dần
+
+-> Tính chất ANN: hidden layer có thể có nhiều; fully connected, feed-forward, feedback, lateral feedback, recurrent networks; noise tolerance, support parallel computation, target function unknown, long time training, quick prediction
+
+
+
+# Kmean
+-> Tính chất: unsupervised learning; inter cluster maximized, intra cluster minimized
+Complex: O(rkt) => r là số lượng instance, k là số clusters, t là số iteration
+Số lượng cluster k khó bt trước
+
+-> Performance evaluation: external evaluation thì dùng thông tin bên ngoài; internal evaluation chỉ dựa vào clustered example k dễ
+--> Internal evaluation: 
+RMSSTD: công thức cụ thể là nó đo độ cohesion. Càng nhỏ càng tốt
+R-squared: công thức phức tạp đo separation bw các cluster. Càng lớn càng tốt
+Dunn index: tỉ lệ giữa minimum inter-cluster và intra-cluster. Càng lớn càng tốt
+Davies-Bouldin index: tỉ lệ intra-cluster/inter-cluster. Càng nhỏ càng tốt
+
+-> Cơ chế: lấy random k instance làm centroid -> chia mọi instance vào cluster -> tính lại centroid -> lặp lại bước 2 đến khi converge
+Mean centroid: m = 1/|Ci|*M(x thuộc cluster Ci)(x)
+Còn PT kc d(x,m) dùng kc ơ clit thôi
+
+-> Đk dừng: k đổi centroid, k có re-assign lại các instance, error k giảm mạnh nx.
+
+-> Xử lý lỗi:
+outlier => remove từ trước các điểm xa hơn so với các cái còn lại; cách 2 là chọn random sampling 1 small subset thì sẽ xs rất thấp chọn phải outlier, sau đó assign số còn lại vào cluster
+initial centroid => chọn nhiều lần và làm nhiều lần để lấy kq tốt nhất; cách 2 là chọn 1 random rồi chọn centroid tiếp theo ở xa nhất với các cái đã chọn
+
+-> Hierarchical agglomerative clustering: 1 cách khác kmean cho clustering
+--> Cơ chế: mỗi instance 1 cluster -> merge từ dưới lên đến khi còn 1 cluster thành root của cây
+
+--> Trước khi merge thì phải tính distance giữa mọi cặp cluster đã có để merge lại các cặp cluster gần nhau nhất. Có nhiều cách:
+Single link: distance of 2 cluster is minimum
+Complete link: distance of 2 cluster là kc 2 node xa nhất 
+Average link: trung bình distance mọi cặp pair
+Centroid link: distance giữa 2 centroid
+
+--> Tính chất: O(r^2.log(r)) là complexity cho complete và average và O(r^2) còn lại => khó dùng cho dataset lớn
+
+--> Distance function: 
+Với numeric thì dùng Minkowski distance or ơ clit or Manhattan
+Binary thì tỉ lệ mismatch/all = d(xi,xj) = (b+c)/(a+b+c+d) thì VD b là số attribute trong xj là 1 nhưng xi là 0, a là số attribute cả 2 cùng là 1
+Nominal thì d(xi, xj)=(p-q)/p với p là số attribute, q là số attribute có cùng giá trị giữa xi và xj
+
+
+
+# Association rule mining:
+-> Tính chất: itemset, k-itemset, support count, support, frequent itemset, association rule, support và confidence trong rule evaluation metrics
+
+-> Cơ chế: 
+--> Brute force: tìm mọi cặp association rule -> tính support và confidence cho từng rule -> xóa rule nào k thỏa mãn support >= minsup và confidence >= minconf => tốn
+--> Frequent itemset generation: sinh các itemset thỏa mamnx support >= minsup trước rồi từ đó sinh tiếp các rule thỏa mãn confidence >= minconf => O(N.M.w) với N là số transaction, W là số item trong 1 transaction, M là số candidate itemset. Ta cần phải duyệt qua mọi transaction, mỗi transaction ta duyệt qua từng item trong transaction đó để xây ra mọi itemset, có đến 2^W item set possible, duyệt qua từng candidate itemset để tìm itemset nào thỏa mãn điều kiện => tốn
+
+--> Cải tiến frequent itemset generation:
+---> giảm số lượng transaction: kệ mẹ
+---> giảm số lượng matching/comparison: kệ mẹ
+---> Giảm số lượng candidates: VD AB mà có support nhỏ thì ABC, ABD, ABE cũng có support nhỏ nên bỏ AB là bỏ được mọi superset của nó
+1) Cái này gọi là Apriori alg: Sinh frequent itemset length k = 1 => xây candidate itemset với length k + 1 và check rồi prune luôn các itemset k thỏa mãn, chỉ cần loại được 1 candidate là loại được rất nhiều -> lặp lại 
+2) minconf cũng thay đổi được:
+c(ABC → D) >= c(AB → CD) >= c(A → BCD) tùy vào vế phải tự hiểu -> loại bỏ c(ABC → D) thì loại bỏ hết số còn lại vì số còn lại cũng < minconf
+
+---> Yếu tố ảnh hưởng độ phức tạp:
+số lượng item, size of database, độ rộng trung bình của transaction, minsup càng chọn lớn càng prune được nhiều
+
+
