@@ -168,3 +168,8 @@ Brute force approach: duyệt itemset chọn ra candidate frequent itemset(M), d
 Apriori: 1) 1 item là infrequent thì mọi superset đều infrequent và bỏ được. VD: bỏ AB thì bỏ ABC, ABCD luôn; 2) sinh frequent itemset length 1 -> tạo dần candidate item set với length +1 tăng dần -> loại bỏ itemset infrequent -> lặp bước 2. Bởi vì confidence là anti-monotone nếu cùng sinh từ 1 itemset. Vd: bỏ BCD=>A thì cũng bỏ CD=>AB và BD=>AC và CD=>AD, số lượng vế phải càng nhiều(cùng chứa item là A) thì confidence càng giảm
 ***Quick***
 
+
+
+# Other
+-> mintlify là tool giúp generate documentation automatically từ markdown sử dụng công nghệ AI
+
