@@ -2,6 +2,65 @@ Data mining and machine learning: Vở ghi, slide, txt
 
 
 
+# AI
+-> NLP: Natural Language Processing xử lý ngôn ngữ tự nhiên là 1 nhánh của AI. VD có thể nhận diện text trong ảnh chuyển sang văn bản
+
+-> Các thuật toán search cây dùng trong AI:
+BFS  DFS
+
+Greedy best first search: Chọn quãng đường ngắn nhất tới mục tiêu chỉ bằng cách ước lượng, VD chọn đường đi theo đường chim bay => có thể k ra kết quả chuẩn
+f(n) = h(n)
+
+Uniform cost search: Chọn dựa vào dữ kiện thực tế k có ước lượng gì cả. Nó duyệt mọi quãng đường và tính lowest cost bth dựa vào dữ kiện cho thực tế
+f(n) = g(n)
+
+A* search: Chọn dựa vào giá trị ước lượng kèm với dữ kiện thực tế nên luôn chọn đúng optimal route luôn.
+f(n) = g(n) + h(n)
+Với g(n) là cost thực tế từ điểm bắt đầu tới điểm thứ n; h(n) là cost ước lượng từ n tới đích(heuristic value)
+
+-> Các loại agent:
+Simple Reflex Agent: A simple reflex agent is an AI agent that uses a set of predefined rules to make decisions based on the current state of the environment. It does not consider the history or future of the environment. An example of a simple reflex agent is a thermostat that turns on or off the heating system based on the current temperature. The thermostat only reacts to the current temperature, without considering the time of day or the desired temperature range.
+
+Model-Based Reflex Agent: A model-based reflex agent is an AI agent that uses a model of the environment to make decisions. It considers the history of the environment and the effects of its actions on the environment. An example of a model-based reflex agent is a chess-playing AI that uses a model of the game board to plan its next move. The AI considers the current state of the game, the history of previous moves, and the potential outcomes of future moves.
+
+Goal-Based Agent: A goal-based agent is an AI agent that has a specific goal to achieve in the environment. It uses planning and decision-making algorithms to achieve its goal. An example of a goal-based agent is a delivery drone that has to deliver a package to a specific location. The drone uses a map of the area, calculates the shortest route to the destination, and avoids obstacles in its path.
+
+Learning Agent: A learning agent is an AI agent that improves its performance over time through learning from experience. It can adapt to new situations and learn from feedback. An example of a learning agent is a speech recognition system that learns to recognize and understand different accents and dialects over time. The system uses machine learning algorithms to improve its accuracy and performance with each new interaction.
+
+Utility-based agent: make decisions based on maximizing their expected utility or value. These agents consider not only the goals to be achieved, but also the potential costs and benefits associated with different actions in the environment. An example of a utility-based agent is a self-driving car that uses a decision-making algorithm to navigate the road. The car evaluates different actions, such as accelerating, braking, or changing lanes, based on their expected utility, taking into account the probability of collisions, traffic conditions, and the destination.
+
+-> Neural network là gì:
+Mô phỏng nơ ron trong não người. Có thể ứng dụng kiểu dịch được chữ trong 1 bức ảnh giấy viết tay
+
+-> Propositional Logic:
+Là kiểu xử lý logic trong AI. Vd có 1 tập hợp các mệnh đề chắc chắn là đúng, ta có thể suy ra được 1 loạt các mệnh đề đúng khác.
+Do đó khi truyền vào AI 1 số câu văn, nó có thể hiểu được và cho ra các câu văn khác nhưng vẫn đúng.
+
+Có cả backward chaining là từ mệnh đề đích suy ra các câu văn
+Forward chaining là từ tập hợp các mệnh đề, suy ra mệnh đề đích
+
+Để chứng minh 1 mệnh đề là đúng. Ta lấy nghịch đảo của nó rồi dùng resolution rule để biến đổi được ra conflict là xong.
+=> Slide "PropositionalLogic.pdf" có rõ
+
+-> Các thuật toán project cờ caro
+- Heuristic giảm k gian: Loại bỏ các ô cách xa quá 3 ô so với các ô đã đánh
+
+- Heuristic tính điểm: điểm của 1 ô bằng điểm của 4 hướng cộng lại. Điểm của mỗi hướng được tính theo kiểu số lượng ô liên tiếp k bị chặn cao hay thấp. VD 5 ô liên tiếp thì điểm cao nhất luôn, 4 ô k bị chặn thì điểm thấp hơn và tương tự 3 ô điểm thấp hơn nữa, nếu đánh 1 ô chả tạo cái gì thì điểm thấp nhất. Công thức: điểm của 1 ô = điểm của chính mình tăng lên bao nhiêu + điểm của đối thủ giảm đi bao nhiêu
+Vài tính chất khác: ô đầu tiên đánh giữa bàn cờ, nếu tạo 5 ô liên tiếp thì đánh luôn mà k cần tính gì thêm
+
+- Minimax: duyệt mọi ô trong không gian (sau khi đã co nhỏ) và tính điểm mọi ô đó lấy ô điểm cao nhất. Đó là chế độ dễ depth = 1. 
+Ở chế độ khó depth = 3: A duyệt trâu mọi nước -> premove cho B duyệt trâu mọi nước -> premove A duyệt trâu mọi nước -> Cứ thế premove được trước 3 nước cho A và lấy ra điểm tốt nhất ở nước cuối cùng, backtrack ngược về xem nước nào đầu tiên đánh cho ra được nước cuối cùng đó thì lấy.
+Nếu 2 ô bằng điểm nhau ta check ô nào cho chiến thắng nhanh hơn VD depth bằng 3 nhưng mới duyệt trâu 2 lần (Depth=2) đã thắng rồi thì lấy, hoặc ô nào cho điểm số tương tự nhưng nhanh hơn
+
+- Alpha beta: Dù đã giảm không gian bằng heuristic nhưng minimax cho O(n^3) ở chế độ hard quá lâu nếu bàn cờ kích thước lớn làm cho tốc độ chậm. Thuật toán này cho kết quả y hệt minimax nhưng nhanh hơn ở chỗ: Ta k duyệt trâu mọi nước ở mỗi bước recursive nữa mà duyệt và dừng lại nếu biết trước các nước còn lại k đem lại điểm số cao hơn.
+Vc duyệt sẽ xây lên 1 cây 
+Nó khác branch and bound ở chỗ, branch and bound đang xây dở thì dừng được luôn nếu k thỏa mãn giá trị tối ưu. Còn alpha beta tương tự minimax đã nói bên trên là phải duyệt đến node lá thì mới backtrack về lấy làm điểm số cho node root. 
+
+URL: https://www.javatpoint.com/ai-alpha-beta-pruning
+=> Hiểu nhanh để tìm alpha thì phải tìm max trong số cac beta con, để tìm beta thì phải tìm min trong số các con tiếp. VD alpha hiện tại là 6, mà 1 min trong số các beta con là 5 thì bỏ luôn nhánh beta đó. Vì beta chọn ra sẽ <=5 mà ta cần >=6 kiểu gì cũng k thỏa mãn nên bỏ
+
+
+
 # Giới thiệu
 Testset k được dùng trong gđ training, validation set dùng như 1 nguồn unseen data khi training chỉ phục vụ optimization
 1 vài thư viện nổi tiếng như MLib, Apache Mahout, CNTK, Theano, PyTorch, TensorFlow,.. Phần lớn đều dùng Python, 1 số ít dùng C++
