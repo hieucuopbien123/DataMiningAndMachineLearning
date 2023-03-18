@@ -1,0 +1,347 @@
+Thi TN nên k cần nắm vững, chỉ cần biết nhiều
+Đọc và ghi tóm hết slide sao cho đọc lại txt là hiểu sơ hết mà k cần đọc lại slide. Ghi Kt mới và tổng quan thôi là xong
+=> Trước khi thi đọc lại txt lần nx là xong
+
+Làm đề kìa
+
+
+
+
+1) 
+Kaggle
+
+Big data ý chỉ data set quá lớn và phức tạp mà các phần mêm truyền thống k đủ khả năng xử lý. Chứ kp cứ dữ liệu lớn là big data
+
+Velocity: tốc độ tăng nhanh
+Variety: đa dạng
+Value: có giá trị cao
+Veracity: chất lượng đáng tin cậy và chuẩn xác
+Volume: kích thước lớn
+
+
+
+2) 
+Spider crawl website từ seed URL và lưu và DB
+
+Googlebot: crawl content trên internet everyday
+
+6 loại web crawler:
+Standard: general purpose crawler là loại cơ bản nhất thường dùng bởi search engine để index website
+Focused / incremental crawler: là loại crawler tương tự nhưng chỉ crawl và index web page được update kể từ lần crawl cuối cùng, nó thường dùng để update change of 1 website cụ thể
+Deep web crawler: là 1 hidden web crawler dùng cho các page đặc biệt k được indexed bởi search engine và bị ẩn khỏi thanh tìm kiếm
+Distributed crawler: google bot là distributed vì nó phân bố công việc crawling cho nhiều node trong mạng nên thực hiện song song trên large scale
+Vertical crawler: hay topical crawler hay focused topic crawler chỉ chuyên crawl cho 1 topic cụ thể. 
+Personalized crawler: hay user-focused crawler là crawler đặc biệt cho các user cụ thể, nó lấy data từ lịch sử người dùng, các mục yêu thích rồi cho ra kết quả liên quan hơn
+
+Spam page
+Spider trap
+Too many request 
+
+Robots.txt quyết định phần nào của website được phép crawl
+
+Crawl kp là dùng axios với mỗi homepage là xong, để crawl 1 website hoàn chỉnh mọi thông tin, ta phải crawl tất cả mọi url từ domain đó trong 1 ct
+
+Scrapy có nhiều module bên trong như scheduler, spider, downloader, main engine cực mạnh, support cả incremental crawling strategy
+
+Facebook Graph API: các trang như microsoft, facebook đều có bộ graph api explorer riêng dành cho developer phát triển các ứng dụng hỗ trợ.
+Có thể làm được mọi thứ với graph API, cần accesstoken
+Mỗi thành phần của user là 1 node trong graph, só lượng like, nhóm, post là các edge trong graph
+
+
+
+3) 
+Data Integration: uniform access vào data từ nhiều nguồn, sẽ dễ dàng lấy và combine data chỉ qua 1 endpoint
+
+ETL: việc xử lý move data từ nhiều source khác nhau load vào 1 data warehouse 
+Extraction: data extracted từ nh nguồn
+Transformation: chuyển đổi extracted data sang dạng phù hợp cho analysis, bao gồm cả clean và thêm thông tin
+Loading: load transformed data vào data warehouse or data lake
+
+Virtual integration: 
+User query -> Mediator[Reformulation engine | optimizer | exec engine] -> Wrapper - Data source
+                                                                       -> Wrapper - Data source
+Exec engine <---> Data source catalog
+
+Mediator làm hết nv và là 1 cái chung. Ở từng data source có thể dùng nhiều ngôn ngữ khác nhau miễn cung ra wrapper chuẩn
+Data source catalog chứa thông tin chi tiết về các loại source
+
+Apache nifi: dựa trên Flow Based Programming(FBP). Nó là 1 integration tool cung UI để manage data flow giữa các system ez.
+
+Data preprocessing để cải thiện chất lượng data:
+-> Mức độ Data Quality:
+Value level: thiếu giá trị, sai syntax
+Value set level: khác tên nhưng cùng ý nghĩa, synnonym, homonym, unique violation => nên quy về cùng tên sẽ đồng nhất hơn
+Record set level: VD trường tổng giá phải bằng trường price + tax, nếu khác thì vi phạm ở mức record set level
+Relation level: các viết khác nhau nhưng cùng bd 1 thứ như name = "John Smith" và name = "Smith, John"
+Multiple relation level: quan hệ giữa các thành phần phải thống nhất và chính xác. VD phải đúng chính tả cùng 1 đối tượng ở 2 nơi khác nhau
+
+Data cleaning
+Fill missing data: với giá trị mean
+Manage noisy data: loại bỏ giá trị outlier
+Manage inconsistent data: tìm data sai và loại bỏ
+
+Data integration: 
+Data transformation: Normalization VD chuyển giá trị trong khoảng này thành gt trong khoảng khác
+Data reduction: giảm volume nhưng vẫn cho ra result đó. Có thể: giảm dimension bằng feature selection; compress data VD convert text to number; convert continuous thành discrete
+
+
+
+4) Exploratory data analysis(EDA)
+Focus vào model, structure của data.
+Iterative, hỏi r trả lời r hỏi. Nó xử lý từng variables và quan hệ giữa chúng, chú trọng vào dữ liệu phân loại or dữ liệu số bằng cách vẽ các cái như box plot cho từng cái.
+
+Measure of location: tìm central value mô tả data chuẩn nhất về vị trí phân bố => mean
+Measure of Scale: đặc tính về độ trải hay sự biến dộng của data set => variant
+
+Scatter plot
+
+Clustering: có nhiều kiểu distance và ta nhóm thành các nhóm chứa các data có distance gần nhau vào 1
+Kmean: lấy distance giữa các nhóm là kc giữa phân bố trung tâm của từng nhóm
+
+Data compression kiểu reduce dimension, VD giảm 2D về 1D, nD về kD
+
+
+
+5) 
+ML là (P,T,E) bản chất chỉ là học 1 hàm ánh xạ f:x->y có 2 kiểu là regression và classification
+
+Supervised learning và unsupervised learning
+
+Multiclass và multilabel
+
+Overfitting là khi tồn tại g sao cho g tệ hơn ở train set nhưng tốt hơn ở testset, vì model ta train quá chuẩn với train set. Khi quá nhiều noise, train size nhỏ, function quá complex
+
+
+6) 
+Linear regression: y = f(x) = w0 + w1x1 + ... + wnxn => prediction 
+
+Loss function: [c - f(x)]^2
+Expected loss: E = (Ex)[c - f(x)]^2 => cần tìm f để E nhỏ nhất
+
+Trong thực tế ta chỉ quan sát được empirical loss RSS khi train là 1 công thức khác
+OLS là method tìm f sao cho RSS nhỏ nhất
+
+Ridge regression là method tương tự và phụ thuộc vào 1 tham số ta chọn là hyperparameter 
+
+
+Classification:
+Decision tree: xây tree if then để input đi dần đến lá là 1 nhãn
+ID3 là thuật toán xây tree. Ở mỗi bước nó yêu cầu chọn ra 1 attribute phân biệt cho training set. Dùng entropy có công thức riêng để xđ như môn IT -> dựa vào entropy tính ra information gain của từng attribute rồi chọn ra attribute phù hợp
+Giải pháp giảm overfitting là xây rồi post pruning
+
+Random forest là 1 method khác dùng cho cả classification và regression, chứa nh tree bên trong
+
+Đánh giá model performance, evaluation model assetment:
+Hold-out: chia Dtrain và Dtest
+Stratified sampling: có nhiều class thì mỗi class ta chia ra cùng 1 lượng tỉ lệ 
+Repeated hold-out: lặp lại việc lấy hold-out n lần và lấy trung bình để tránh mỗi lần chia tỉ lệ khác nhau performacen khác nhau
+Cross validation: chia D thành k phần bằng nhau(k-fold) và chọn dần các lượng khác nhau làm trainset, phần còn lại là testset và lấy trung bình
+
+Model selection nói về quá trình chọn setting cho 1 model chạy đạt performance cao. VD cách dùng hold out chia D thành train set với tỉ lệ hợp lý
+
+Accuracy = correct prediction/total
+2 thông số dùng cho classification chia lớp:
+precision: trong 10 cái được phân vào class c, bao nhiêu cái đúng
+recall: trong 10 đúng là của class c, đoán được bnh cái đúng 
+
+
+
+7-1) 
+Apache Hadoop: framework hỗ trợ xử lý phân bố data lớn vào các computer khác nhau để scale out từ 1 tới hàng nghìn máy
+
+Hadoop distributed file system(HDFS): cung nguồn storage cho 1 lượng data cực lớn. K phù hợp store large number of small file
+Có thể chia master slave: với master là namenode chứa meta data của slave, slave là datanode là nơi thực sự xảy ra read write
+
+MapReduce là framework trong Hadoop giúp process data. Mỗi work được thực hiện độc lạp với nhau for scale reason. Cơ chế là ta phải code 2 hàm là map function và reduce function, data đi qua 2 cái đó cho ra output. Map function sẽ spit task ra thành từng cục và xử lý, result đi vào reducer để xử lý tiếp và tổng hợp kết quả
+Input -> split -> map -> shuffle(từng cục cùng loại vào với nhau) -> reduce(tính tổng từng cục) -> final result
+
+Apache Pig xây dựa trên Hadoop cung high level processing
+Apache Hive xây trên MapReduce để xử lý tốt hơn, nó là query engine support 1 phần SQL
+HBase là distributed data store xây trên HDFS được coi là Hadoop DB.
+Apache sqoop: tool giúp transfer bulk data giữa Apache Hadoop và external data store
+Apache Kafka: 
+Apache Oozie: workflow scheduler system to manage Apache hadoop job
+Apache Zookeeper:
+
+
+
+7-2) 
+Apache Hadoop cần nhiều IO operation nên chậm. Apache Spark tốt hơn vì thao tác nh trên RAM và có nhiều tính năng mở rộng hơn. 
+RDD: Resilient Distributed Dataset là 1 cấu trúc dữ liệu trong Apache spark, dữ liệu các đối tượng của nó được phân vùng trên nhiều nodes và có thể xử lý song song, fault tolerance.
+
+
+
+8) 
+Interactive visualization và presentation visualization
+Data continuous or discrete data
+
+Matplotlib architecture
+backend layer lo render
+artist layer các hình hiển thị
+scripting layer có thể access vào 2 layers kia
+
+Thư viện python để visualize: Mathplotlib, seaborn xây based trên mathplotlib
+numpy thao tác với array
+
+Graph:
+acyclic graph là graph k có cycle
+mathplotlib k hỗ trợ, phải dùng Roassal
+
+Tree map là kiểu biểu đồ chia các vùng hcn, tỉ lệ diện tích biểu thị quantity
+
+
+
+9) 
+NLP: natural language processing là xử lý ngôn ngữ tự nhiên
+Cho 1 đoạn văn bản sẽ có nhiều bước:
+word segmentation chia ra thành nhiều loại như: hán viêt, danh từ động từ, từ láy, từ mượn, tên riêng,..
+Part of speech tagging: gắn tag cho các từ
+Phrase chunking: tách thành từng cụm từ đi liên với nhau
+Parsing: nhiều kiểu parse sang dạng cây
+
+
+
+10-11) Computer Vision
+Computer hiểu ảnh và video và có thể dùng nó làm source of information
+
+OCR
+
+Máy 1 khung ảnh nhỏ như 1 ma trận số
+binary image: {0,1}
+gray image: [0...255]
+color image: 3 thông số R G B trong khoảng [0, 255]
+depth image: ảnh có thêm chiều sâu sẽ có thêm thông số, k chỉ dựa vào màu
+
+Image histogram: dựa vào cường độ màu trong ảnh, 2 bức ảnh khác nhau có thể có cùng histogram
+
+Brightness và Contrast có công thức riêng
+3 cách tăng độ tương phản:
+linear stretching: tăng intensity range của các màu trong bức ảnh lên
+non linear transform: còn gọi là gamma correction
+histogram equalization: cân bằng historgram cho bức ảnh từ lệnh thành 1 hàng uniform distribution luôn
+=> kp cách nào cũng hoạt động với mọi ảnh. 1 bức ảnh đã có gamma correction sẵn rồi thì phải chỉnh các thông số khác
+
+HSV: Hue Saturtion Value color space. H là màu nào [0..360], S là độ tươi[0...1], V là cường độ. RGB k có kiểu chia này
+
+Lab color space: dùng trong computer vision
+L là độ sáng luminance, a là x axis, b là y axis
+
+Spatial convolution nói về việc nhận vào 1 pixel màu sẽ tìm ra các màu lân cận và đổi pixel sang màu khác. Vd làm mờ, giảm nhiễu, tăng contrast => I' = I * K => new value of pixel = weighted sum of neighhor
+
+Kernel là vài cái 2D spatial convolution có sẵn được dùng cho các mục đích riêng như làm mờ, làm sắc nét,...
+Gaussian filter: low-pass filter là cách remove các high frequency component trong ảnh làm cho ảnh smooth hơn
+
+Image gradient: là directional change về color và cường độ trong ảnh
+Có công thức riêng slide
+
+Edge detection bằng đạo hàm cấp 1 của ảnh (cũng chỉ là 1 matrix mà)
+Laplacian filter với đạo hàm cấp 2 của ảnh 
+
+Preprocessing -> deep learning[feature extraction | learning] -> Model cuối
+
+Feature extraction:
+Global feature: mô tả cả bức ảnh như 1 object lớn, nhận diện hình dạng, văn bản or đường viền
+Local feature: mô tả hình texture or màu trong image
+
+OpenCV là thư viện open source cho computer vision và ML, hỗ trợ nh lang như java, python, matlab, C++
+
+
+
+10-11) Link analysis. Ứng dụng trong community detection, network ranking,..
+Có các cái đồ thị G(V, E) và ta phân tích link.
+
+Có 3 loại link: Bad, Good, Unknown và quy tắc là 1 link good kbh trỏ tt tới 1 link bad => có thể giải mã được các link unknown là bad hay good
+
+Centrality analysis:
+Có nhiều vertices và centrality của 1 vertex cho biết độ qtr của vertex đó
+
+Closeness centrality có công thức riêng, sau khi tính được shortest distance giữa 2 node bằng Dijkstra alg
+Betweenness centrality có công thức riêng 
+Degree prestige là độ uy tín của 1 node có công thức riêng tính
+Proximity prestige
+
+PageRank: 1 tp chính của gg search engine, dựa trên toàn bộ cấu trúc graph của web(xây kiểu mỗi navigation là node trên graph). 
+
+Large graph thì rank bằng iterative random walk -> k ổn vì nhiều dead ends -> cải tiến bằng teleport, gặp dead end là nhảy sang random page khác -> tính visit rate:
+Markov chain: n state + nxn transition matrix P => là 1 cách mô tả qtr random walk
+Ergodic markov chain là khi k có deadend, tức luôn có 1 xs visit rate ở mỗi state là số dương
+
+Probability vector cho ta biết vị trí đang walk là ở đâu. Vd (01000000) là đang ở state thứ 2. Thực tế sẽ là (x1,...,xn) cho biết walk đang ở state thứ i với xs xi
+Do đó làm sao để biết được state tiếp theo là gì, ta phải tính x*P => y hệt IT. State sau nx sẽ là x*P^2
+Nếu probability vector is steady state thì x=xP + tổng các x1+...+xn=1 giải sẽ được x
+Công thức P với smoother version có trong slide để tránh zero column trong P
+
+HITS for ranking: Hypertext Induced Topic Search 
+
+1 good hub page for 1 topic trỏ tới nhiều authorities page for that topic
+1 good authorities page được nhiều good hub trỏ tới
+
+Authority là vertex với lượng lớn incoming edge
+Hub là vertex với lượng lớn outgoing edge
+
+HIT algs là thuật toán cũng dùng trong ranking nhận query và cho ra authority với hub. Thuật toán gồm 3 bước
+Information retrieval: dùng search engine xây root W chứa top k page theo chủ đề input vào
+Graph expansion: sẽ expand từ root W sang base S bằng cách tạo ra các link tới các page khác
+Ranking: xác định các top hub và authorities page và chấm điểm cho từng cái theo công thức riêng trong slide và trả ra là xong
+
+
+
+13) Recommendation system là hệ thống gợi ý thg dùng trong e-commerce
+Phải sử dụng dữ liệu lịch sử của người dùng để chạy
+
+MEA NMEA RMSE có công thức riêng
+
+VD dùng KNN(K nearest neighbor). Có nhiều loại kc Euclide, Manhanttan => cứ tính r lấy kc ngắn nhất làm gợi ý
+
+
+
+Giải đề:
+Page
+1) EDA: understand, visualize, summary data
+
+Box plot của từng subgroup cho biết sự khác biệt giữa các subgroup, location concentration giữa các subgroup tập trung ở miền nào, có outlier không, có important factor nào qtr
+
+4) Google Openrefine là opensource tool thao tác với messy data, nó có thể extend, transform hay clean them. Nó có thể import data từ remote url, database, localfile. 
+
+Supervised learning cần label ở training phase và thg dùng cho dự đoán
+Unsupervised learning chỉ chơi kiểu tìm ra pattern nên k cần label ở training phase, nó thg k dùng cho prediction mà dùng cho kiểu như k nearest distance chẳng hạn.
+
+Supervised learning có thể cho ouput là realnumber, VD như dự đoán giá nhà
+
+5) Histogram plot kiểu biết được sự phân bố của tập data ấy
+Nó cho biết sự phân bố, đối xứng hay nghiêng, tập trung trên miền nào, outlier, sự trải rộng của data
+
+XPath là 1 query language dùng để select node và value từ XML document. Như kiểu dùng SQL để query db ấy, thì nó dành riêng cho XML doc
+
+6) Barchart thì thg kiểu categorize, còn histogram thg kiểu continuous nhưng được quantized thành có giá trị fix
+
+HDFS là thao tác trên disk nên nếu dùng thao tác IO nhiều sẽ rất chậm và latency cao.
+
+7) Sai. Box plot cung thông tin về medium, lower upper quartile, gap (kc giữa third và first quartile), highest value => nó k cung thông tin về phân bố xs
+Skewness là đo độ đối xứng mà ta thấy trong historgram ấy chứ box plot k cung thông tin về nó 
+
+8) Web Scraper là 1 browser extension giúp crawl web, còn Scrapy là thư viện của Python
+
+9) Loss function đo lượng error, đồng thời đóng vai trò qtr trong qtr learning từ data, là hàm mục tiêu luôn vì cần tạo ra hàm loss nhỏ nhất
+
+Model selection phải là select params chứ, b mới đung
+
+10) Temperature là ordered continuous data. Data nào comparable thì là ordered. VD dải màu hay directions thì là unordered
+
+12) binary image thì 1 pixel là 1 bit; gray image thì 1 pixel là 8 bit vì chỉ có 1 giá trị trong [0...255]; color image mới dùng 3 bytes vì có R G B mỗi cái [0...255]
+
+13) Lib dùng cho EDA bao gồm các công đoạn visualize và xử ly text các kiểu mà. NLTK và Spacy là thư viện chuyên xử lý NLP. Pandas hỗ trợ plot lib. Numpy thao tác mảng
+
+14) K đủ data hoặc cần thêm validation set dể chỉnh lại hyperparam cho đúng. Vd tỉ lệ hay phần chia Dtrain, Dtest bị chênh lệch
+
+15) Ra B đúng hơn. Tính page rank theo youtube
+1/3 1/3 1/3
+0.2314 0.3933 0.3753
+0.2647 0.4706 0.2647
+=> làm tròn số khiến ra kq sai
+
+16) Đúng là ID3 dừng tree khi đã correct hết training data hoặc mọi attribute trong tree đều kinh qua rồi thì đi đén kết quả thoi
+
+Scrapy tích hợp được với nhiều loại DB và nó store to db bằng item pipeline, viết 1 hook truy cập vào đó là được
+
+
