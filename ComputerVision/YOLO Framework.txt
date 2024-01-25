@@ -1,0 +1,309 @@
+-> Roboflow là một nền tảng hỗ trợ xử lý ảnh và dữ liệu video để huấn luyện mô hình máy học. Nó cung cấp các công cụ để chuẩn bị dữ liệu, tạo các bộ dữ liệu huấn luyện và triển khai mô hình.
+
+Tiền xử lý traffic light:
+Khi chụp ảnh bằng điện thoại hoặc máy ảnh kỹ thuật số, thông tin về hướng của ảnh có thể được lưu trữ trong dữ liệu EXIF. "Auto-orientation of pixel data with EXIF-orientation stripping" là quá trình tự động điều chỉnh hướng của dữ liệu pixel trong ảnh dựa trên thông tin EXIF, đồng thời loại bỏ thông tin về hướng này để đảm bảo rằng ảnh được hiển thị đúng cách trên các thiết bị khác nhau mà không cần phải xử lý lại thông tin hướng.
+
+
+
+-> Trong thị giác máy tính, "tracking" thường liên quan đến việc theo dõi đối tượng qua nhiều khung hình liên tiếp trong một video. Một hàm track trong mô hình YOLO có thể được sử dụng để:
+
+1. Nhận diện đối tượng trong khung hình hiện tại (sử dụng YOLO để phát hiện đối tượng).
+2. Gán một định danh (ID) cho mỗi đối tượng được phát hiện.
+3. Theo dõi đối tượng qua các khung hình tiếp theo.
+
+Thuật toán cụ thể được sử dụng cho việc theo dõi có thể khác nhau, nhưng một số phương pháp phổ biến bao gồm:
+
+- Simple Online and Realtime Tracking (SORT): Sử dụng dự đoán Kalman Filter để dự đoán vị trí của đối tượng trong khung hình tiếp theo và sử dụng Hungarian Algorithm để gán các phát hiện mới với các đối tượng đã biết.
+- Deep SORT: Mở rộng từ SORT bằng cách thêm các đặc trưng học sâu để cải thiện việc gán đối tượng và giảm thiểu các lỗi gán.
+- Multiple Object Tracking (MOT): Các phương pháp khác nhau trong MOT có thể được sử dụng, bao gồm cả việc sử dụng mạng nơ-ron học sâu để trích xuất đặc trưng và theo dõi đối tượng.
+
+Khi bạn gọi hàm track với tham số persist=True, có thể bạn đang yêu cầu mô hình duy trì trạng thái theo dõi qua nhiều khung hình, tức là không reset trạng thái theo dõi sau mỗi khung hình.
+
+--> Kalman Filter là một công cụ dự đoán và lọc dữ liệu, trong khi SORT là một thuật toán theo dõi đối tượng sử dụng Kalman Filter như một phần của quy trình làm việc để dự đoán vị trí đối tượng và quản lý danh tính của chúng qua thời gian.
+
+Kalman Filter:
+- Kalman Filter là một thuật toán dự đoán tối ưu dùng để ước lượng trạng thái của một hệ thống động theo thời gian dựa trên các quan sát có nhiễu.
+- Nó là một phương pháp lọc tuyến tính và đệ quy, thường được sử dụng trong các hệ thống điều khiển và xử lý tín hiệu để làm mịn dữ liệu và dự đoán trạng thái tiếp theo của hệ thống.
+- Kalman Filter hoạt động dựa trên mô hình toán học của hệ thống và các quan sát, và nó cập nhật ước lượng trạng thái khi có thông tin mới.
+
+SORT (Simple Online and Realtime Tracking):
+- SORT là một thuật toán theo dõi đối tượng được thiết kế để hoạt động nhanh và hiệu quả trong việc theo dõi các đối tượng qua các khung hình của video.
+- Nó sử dụng Kalman Filter để dự đoán vị trí của đối tượng trong khung hình tiếp theo và sử dụng một thuật toán gán (như Hungarian Algorithm) để liên kết các phát hiện đối tượng mới với các đối tượng đã được theo dõi trước đó.
+- SORT tập trung vào việc giảm thiểu thời gian tính toán để phù hợp với các ứng dụng thời gian thực, nhưng có thể không chính xác bằng các phương pháp theo dõi phức tạp hơn.
+
+---> Cơ chế hoạt động của Kalmen filter:
+Bước 1: Dự đoán (Prediction)
+Trong bước này, thuật toán sẽ sử dụng các dữ liệu quan sát được để dự đoán trạng thái của các đối tượng trong khung hình tiếp theo. Trạng thái của một đối tượng bao gồm các thông tin như vị trí, kích thước, hướng di chuyển, v.v.
+
+Bước 2: Hiệu chỉnh (Update)
+Trong bước này, thuật toán sẽ sử dụng các dữ liệu quan sát được mới nhất để hiệu chỉnh trạng thái dự đoán của các đối tượng. Nếu các dữ liệu quan sát được mới nhất khác biệt đáng kể so với trạng thái dự đoán, thuật toán sẽ hiệu chỉnh trạng thái dự đoán để phù hợp với các dữ liệu quan sát được mới nhất.
+
+Bước 3: Lặp lại (Repeat)
+Các bước 1 và 2 sẽ được lặp lại cho đến khi hết các khung hình trong video.
+
+Dưới đây là một số cải tiến mà YOLO v8 đã thực hiện đối với thuật toán Kalman Filter để cải thiện hiệu quả theo dõi đối tượng:
+- YOLO v8 sử dụng các dữ liệu quan sát từ nhiều khung hình trước đó để dự đoán trạng thái của các đối tượng. Điều này giúp cải thiện độ chính xác của dự đoán, đặc biệt là đối với các đối tượng đang di chuyển nhanh.
+- YOLO v8 sử dụng các dữ liệu quan sát từ nhiều bounding box để hiệu chỉnh trạng thái dự đoán của các đối tượng. Điều này giúp cải thiện độ chính xác của hiệu chỉnh, đặc biệt là đối với các đối tượng bị che khuất hoặc biến dạng.
+- YOLO v8 sử dụng các tham số học được từ dữ liệu thực tế để điều chỉnh các thông số của thuật toán Kalman Filter. Điều này giúp cải thiện hiệu quả của thuật toán trong các điều kiện thực tế.
+
+---> Cơ chế bot sort:
+1. Phát hiện Đối tượng: Trước tiên, các đối tượng trong khung hình được phát hiện bởi một mô hình nhận diện đối tượng, như YOLO, SSD, hoặc Faster R-CNN.
+
+2. Khởi tạo Bộ Lọc Kalman: Mỗi đối tượng được phát hiện được gán một bộ lọc Kalman, được sử dụng để dự đoán vị trí của đối tượng trong khung hình tiếp theo dựa trên vị trí và tốc độ hiện tại của nó.
+
+3. Dự Đoán: Bộ lọc Kalman dự đoán vị trí tiếp theo của mỗi đối tượng dựa trên thông tin từ các khung hình trước đó.
+
+4. Liên Kết Dữ Liệu: Khi có khung hình mới, thuật toán cần quyết định xem các phát hiện mới có phải là cùng một đối tượng với các đối tượng đã được theo dõi hay không. Điều này được thực hiện bằng cách sử dụng một thuật toán gán như Hungarian Algorithm, dựa trên khoảng cách giữa dự đoán của bộ lọc Kalman và các phát hiện mới.
+
+5. Cập Nhật Bộ Lọc Kalman: Khi một phát hiện mới được gán cho một đối tượng, bộ lọc Kalman của đối tượng đó được cập nhật với thông tin mới, giúp cải thiện dự đoán cho khung hình tiếp theo.
+
+6. Xử Lý Đối Tượng Mất Tích và Mới: Nếu một đối tượng đã được theo dõi không xuất hiện trong các phát hiện mới, nó có thể được giữ lại trong một thời gian nhất định trước khi bị loại bỏ, để xử lý trường hợp tạm thời mất tích. Ngược lại, các phát hiện mới không khớp với đối tượng nào được xem là đối tượng mới và bắt đầu được theo dõi.
+
+---> Trong hàm track của YOLO v8, thuật toán Bot Sort được sử dụng để sắp xếp các bounding box của các đối tượng theo thứ tự thời gian. Điều này giúp cải thiện hiệu quả của thuật toán theo dõi đối tượng, bằng cách đảm bảo rằng các bounding box của cùng một đối tượng được sắp xếp liền kề nhau.
+
+Cơ chế hoạt động của thuật toán Bot Sort trong hàm track của YOLO v8 tương tự như cơ chế hoạt động của thuật toán Bot Sort nói chung. Tuy nhiên, có một số điểm khác biệt cần lưu ý:
+
+Lựa chọn pivot
+Khi lựa chọn pivot, thuật toán Bot Sort trong hàm track của YOLO v8 sẽ lựa chọn bounding box có thời gian xuất hiện sớm nhất. Điều này là do các bounding box của cùng một đối tượng thường có thời gian xuất hiện gần nhau.
+
+So sánh các phần tử với pivot
+Khi so sánh các phần tử với pivot, thuật toán Bot Sort trong hàm track của YOLO v8 sẽ so sánh thời gian xuất hiện của các bounding box. Nếu một bounding box có thời gian xuất hiện sớm hơn pivot, thuật toán sẽ hoán đổi vị trí của bounding box đó với vị trí của pivot.
+
+Hóan đổi vị trí các phần tử
+Khi hoán đổi vị trí các phần tử, thuật toán Bot Sort trong hàm track của YOLO v8 sẽ hoán đổi vị trí của hai bounding box. Điều này là do các bounding box là các đối tượng có kích thước lớn, nên việc hoán đổi vị trí của hai bounding box không tốn nhiều thời gian.
+
+Dưới đây là một ví dụ về cách thuật toán Bot Sort được sử dụng trong hàm track của YOLO v8:
+
+Python
+# Lấy các bounding box của các đối tượng
+bounding_boxes = [
+    [10, 10, 20, 20],
+    [5, 5, 15, 15],
+    [15, 15, 25, 25],
+]
+
+# Sắp xếp các bounding box theo thứ tự thời gian
+for i in range(len(bounding_boxes) - 1):
+    for j in range(i + 1, len(bounding_boxes)):
+        if bounding_boxes[i][2] < bounding_boxes[j][2]:
+            # Hoán đổi vị trí của hai bounding box
+            bounding_boxes[i], bounding_boxes[j] = bounding_boxes[j], bounding_boxes[i]
+
+# In ra các bounding box đã được sắp xếp
+print(bounding_boxes)
+Use code with caution. Learn more
+Kết quả in ra:
+
+[[5, 5, 15, 15], [10, 10, 20, 20], [15, 15, 25, 25]]
+Như vậy, các bounding box đã được sắp xếp theo thứ tự thời gian, với bounding box có thời gian xuất hiện sớm nhất ở vị trí đầu tiên, và bounding box có thời gian xuất hiện muộn nhất ở vị trí cuối cùng.
+
+
+
+-> YOLO (You Only Look Once) là một mô hình phát hiện đối tượng và nhận dạng đối tượng nhanh và chính xác. Phiên bản YOLOv5 được phát triển bởi Ultralytics vào năm 2020. YOLOv5 có một số cải tiến so với các phiên bản YOLO trước đó, bao gồm:
+1. Tăng tốc độ: YOLOv5 nhanh hơn và hiệu quả hơn trong việc phát hiện đối tượng.2. Độ chính xác: YOLOv5 cải thiện đáng kể độ chính xác so với các phiên bản trước đó của YOLO.3. Khả năng phân loại đa lớp: YOLOv5 có thể phân loại nhiều đối tượng cùng một lúc.4. Độ linh hoạt: YOLOv5 có thể được sử dụng trên nhiều loại thiết bị và hệ điều hành khác nhau.5. Sử dụng đơn giản: YOLOv5 có một tập lệnh đơn giản và dễ sử dụng.
+
+
+
+-> Lịch sử yolo:
+Object Detection là một bài toán phổ biến trong Computer Vision. Mục tiêu của Object Detection là xác định và phân loại các object (vật thể) tồn tại trong ảnh, là một bài toán multi-task, thực hiện Classification và Regression (Localization) đồng thời. Ở những thời kì đầu tiên trong lĩnh vực này, các nghiên cứu tập trung vào việc sử dụng các hand-crafted feature (đặc điểm nhận dạng do con người nghĩ ra) như SIFT, HOG. Tuy nhiên, cách làm như vậy khá là hạn chế về độ chính xác và khả năng áp dụng lên đa dạng các object cần nhận dạng.
+Từ năm 2012, CNN nổi lên như một thế lực trong các bài toán về Classification sử dụng đầu vào là ảnh, và cũng dần dần được đưa vào sử dụng trong Object Detection. Một phương pháp khá nổi tiếng đó chính là Sliding Window (cửa sổ trượt) Sử dụng một cửa sổ trượt, chúng ta có thể tính toán các feature của từng pixel trong ảnh đầu vào, sau đó tính toán các feature của từng cửa sổ trượt. Để tính toán các feature của từng cửa sổ trượt, chúng ta sẽ lấy một ảnh đầu vào, tạo ra một cửa sổ trượt SxS, trượt dần trên ảnh đầu vào. Ảnh lấy ra nằm trong vùng có cửa sổ trượt sẽ được đưa qua một mạng Classification để nhận diện xem trong vùng vừa lấy ra có object nào. Cách làm này vừa chậm mà Bounding Box của vật thể trong ảnh còn không tốt.
+
+Năm 2013 đánh dấu sự ra đời của một mạng nơ-ron cực kì nổi tiếng trong Object Detection: R-CNN. Trước tiên R-CNN sẽ xác định các vùng có tiềm năng tồn tại object, các vùng có tiềm năng này sau đó sẽ được đưa vào một CNN để thực hiện Classification xem vùng đó là object nào, đồng thời cải thiện Bounding Box cho object. Họ nhà R-CNN tiếp tục phát triển mạnh mẽ với 2 nghiên cứu sau đó là Fast R-CNN và Faster R-CNN, cải thiện tốc độ cũng như là độ chính xác của mô hình. Tuy nhiên, họ nhà R-CNN vẫn khá là chậm với phương pháp hai pha: 1 pha xác định vùng có tiềm năng là object, 1 pha phân loại và cải tiến Bounding Box của object.
+Vì vậy, YOLO ra đời với mục tiêu là một mạng Object Detection có tốc độ cực nhanh với phương pháp một pha của mình.
+
+--> YOLOv1
+YOLO sẽ đưa ảnh đầu vào qua một CNN, tạo ra một feature map SxS, gọi là grid (là 1 cái bản đồ or biểu đồ mô tả thuộc tính ảnh thôi). YOLO thực hiện detect object tại mỗi cell (ô) trong SxS grid đó. Tức là, thay vì có một bước tìm ra các vùng có khả năng tồn tại object, thì YOLO sẽ thực hiện detect trên toàn bộ ảnh, khỏi tìm ra vùng gì cả.
+Một cell sẽ predict ra B Bounding Box và xác suất cho C class. Một Bounding Box sẽ mang 5 thông tin: tâm của Bounding Box (x,y), chiều dài và rộng của Bounding Box (w, h) và độ tự tin. Độ tự tin dùng để xác định xem trong Bounding Box đó có tồn tại object hay không. Nếu trong Bounding Box đó không tồn tại object, ta bỏ qua luôn toàn bộ giá trị prediction khác của Bounding Box và Classification, nhằm bỏ qua những nơi không tồn tại object. Việc sử dụng thông tin độ tự tin này cũng phần nào giống pha thứ nhất trong phương pháp hai pha, lọc ra những nơi tồn tại object.
+Vậy, trong một cell, ta sẽ predict ra một tensor có Bx5+C phần tử, với B là số lượng Bounding Box, 5 là 5 thông tin trong Bounding Box gồm: trung tâm box, chiều dài rộng box và độ tự tin và C là số class. Và trong một feature map gồm SxS cell, tensor dự đoán từ mạng sẽ có độ dài SxSx(Bx5+C)
+Kiến trúc mạng Yolov1 k có gì đáng nói, chỉ là vài layer CNN liên tiếp nhau thôi
+Hạn chế của YOLOv1: YOLOv1 chỉ có thể predict được một object trong một cell, nếu có 2 object tồn tại trong cùng một cell, hoặc nếu phải predict từng object trong một nhóm object, YOLOv1 sẽ gặp rất nhiều khó khăn.
+Với việc chỉ sử dụng 2 Bounding Box, YOLOv1 sẽ gặp khó khăn với những object có tỉ lệ khác so với trong training.
+Regression Loss của YOLOv1 chưa tốt, dẫn đến việc đưa ra Bounding Box không tốt.
+
+--> YOLOv2
+Sau khi error analysis cho YOLOv1, nhóm tác giả nhận thấy rằng YOLOv1 gặp vấn đề về localization khá nhiều (Bounding Box không tốt), hơn nữa, Recall của YOLOv1 cũng khá là thấp (Phát hiện được ít vật thể). Vì vậy, trong YOLOv2 nhóm tác giả tập trung vào cải thiện 2 vấn đề này mà vẫn giữ được độ chính xác tốt.
+
+Darknet-19. Kiến trúc mạng của YOLOv2 được gọi là Darknet-19 vì có 19 lớp Convolution (Conv)
+Batch Norm. Kiến trúc của YOLOv2 đã được thêm vào đó những lớp BatchNorm để việc training nhanh hơn và ổn định hơn. Với việc thêm vào BatchNorm, DropOut được loại bỏ khỏi model mà không sợ bị overfitting.
+High-res Classifier. Backbone của YOLOv2 được pretrained trên ImageNet. Trong YOLOv1, backbone được train trên ImageNet với kích thước ảnh 224x224, lúc train detection với toàn bộ model thì lại sử dụng kích thước ảnh 448x448. Việc chuyển đột ngột như vậy khiến model phải vừa học Object Detection lại còn vừa phải thích ứng với kích thước ảnh mới. Vì vậy, trong YOLOv2, backbone trước tiên được finetune trên ImageNet với kích thước ảnh 448x448 trong vòng 10 epochs, rồi mới chuyển sang dạng Object Detection.
+Fine-grained Features. Thay vì predict trên 7x7 grid feature map như YOLOv1 thì YOLOv2 predict trên một 13x13 grid feature map, việc này sẽ khiến YOLOv2 predict những object nhỏ tốt hơn. Hơn nữa, YOLOv2 cũng sử dụng một skip-connection để kết hợp thông tin từ feature map ở layer trước đó vào feature map cuối.
+Multi-scale training. Trước đó, YOLOv2 chỉ train với kích thước ảnh 448x448. Sau khi áp dụng Anchor Box (sẽ nói ở phần sau), YOLO đổi kích thước ảnh thành 416x416. Tuy nhiên, YOLOv2 muốn model có thể detect tốt với nhiều kích thước ảnh khác nhau, vì vậy, cứ mỗi 10 batches, YOLOv2 lại thay đổi kích thước ảnh đầu vào một lần. Sở dĩ điều này có thể thực hiện được vì kiến trúc mạng của YOLOv2 hoàn toàn tạo từ các lớp Conv và có hệ số suy giảm là 32. Do đó, kích thước ảnh đầu vào của YOLOv2 thay đổi với kích thước là bội số của 32, được lấy trong khoảng {320,352,...,608}.
+
+BatchNorm: là một kỹ thuật chuẩn hóa dữ liệu đầu vào của mỗi layer trong quá trình huấn luyện mạng neural network để giúp tăng tốc độ học của mô hình và giảm hiện tượng overfitting.
+DropOut: là một kỹ thuật ngẫu nhiên loại bỏ một số đơn vị (neurons) trong quá trình huấn luyện mạng neural network để giúp mô hình trở nên linh hoạt hơn và giảm hiện tượng overfitting.
+
+Áp dụng Anchor Box. Trong YOLOv2, tác giả áp dụng Anchor Box được sử dụng trong Faster R-CNN. Lúc này, kích thước ảnh đầu vào được chuyển từ 448x448 thành 416x416 vì tác giả muốn feature map thu được ở lớp cuối cùng là số lẻ (với kích thước ảnh 448x448 thì feature map ở lớp cuối là 14x14) để luôn có một ô trung tâm của feature map. Ý tưởng này đến từ việc các ảnh trong dataset COCO thường có một vật ở giữa ảnh, vì vậy, việc có một ô trung tâm của feature map để Anchor Box có thể dễ dàng lấy được luôn vật đó. Sử dụng Anchor Box, YOLOv2 bị giảm đi 0.3 mAP nhưng bù lại, Recall tăng lên. Tức là việc sử dụng Anchor Box khiến YOLOv2 phát hiện được nhiều vật thể hơn, nhưng bù lại, khả năng phát hiện chính xác lại kém đi.
+Trong các mô hình 2 pha (họ nhà R-CNN), việc Anchor Box hoạt động rất tốt vì pha thứ nhất đã bao gồm việc tối ưu vị trí cho Bounding Box từ Anchor Box, còn trong YOLO thì không có. Do vậy, việc có các Anchor Box đẹp được sinh ra ngay từ lúc đầu khá là quan trọng. YOLOv2 đã thêm vào bước chọn các chỉ số cho Anchor Box được sinh ra ngay từ lúc đầu thông qua thuật toán k-means. 
+Thêm vào đó, việc tối ưu vị trí Bounding Box từ Anchor Box sinh ra được sử dụng trong Faster R-CNN đó chính là: model sẽ dự đoán độ dịch chuyển của Anchor Box gọi là tx, ty để suy ra vị trí của tâm Bounding Box x,y thông qua một công thức biến đổi. YOLOv2 nhận thấy việc này là không phù hợp, nên đã thêm vào một số giới hạn giúp cho tâm của bb tại 1 grid cell sẽ k ra ngoài cell đó
+
+--> Yolov3: 
+Kiến trúc mạng Backbone. YOLOv3 xây dựng một backbone mới, gọi là Darknet-53. Backbone của YOLOv1 thì sử dụng 1x1 Convolution (gọi là Bottleneck) của Inception Network, lên YOLOv2 thì áp dụng thêm BatchNorm, sang YOLOv3 thì áp dụng thêm skip-connection từ ResNet, gọi là một Residual Block.
+"Residual Block" là một khối còn lại trong mô hình học sâu, nó được sử dụng để học và truyền thông tin từ các lớp trước đó sang các lớp sau một cách hiệu quả. Khối còn lại giúp giảm thiểu hiện tượng biến mất đạo hàm và cho phép mô hình học sâu hội tụ nhanh hơn.
+
+Từ các phiên bản YOLO trước, phát hiện vật thể nhỏ luôn là một điểm yếu. Dù trong YOLOv2 đã sử dụng skip-connection từ layer trước đó để đưa thông tin từ feature map có kích thước lớn hơn vào feature map đằng sau, nhưng điều đó là không đủ. YOLOv3 là một sự nâng cấp cho vấn đề này, áp dụng Feature Pyramid Network, thực hiện phát hiện object ở 3 scale khác nhau của feature map.
+
+--> Yolov4:
+YOLOv4 là sự lắp ghép có chọn lọc của các nghiên cứu trong Object Detection lại với nhau
+Về kiến trúc, YOLOv4 sử dụng
+Backbone: CSPDarkNet53
+Neck: SPP, PAN
+Head: y nguyên YOLOv3
+
+Backbone
+CSPBlock
+Ý tưởng chính của CSPBlock được thể hiện như áp dụng vào Residual Block. Thay vì chỉ có một đường đi từ đầu tới cuối, CSPBlock chia thành 2 đường đi. Nhờ việc chia làm 2 đường như vậy, ta sẽ loại bỏ được việc tính toán lại gradient (đạo hàm), nhờ đó có thể tăng tốc độ trong training. Hơn nữa, việc tách làm 2 nhánh, với mỗi nhánh là một phần được lấy từ feature map trước đó, nên số lượng tham số cũng giảm đi đáng kể, từ đó tăng tốc trong cả quá trình inference chứ không chỉ trong training.
+
+CSPDarkNet53
+YOLOv4 áp dụng ý tưởng của CSPBlock, thay thế Residual Block thông thường của YOLOv3 thành CSPResBlock, đồng thời đổi activation function từ LeakyReLU thành Mish, tạo nên CSPDarkNet53.
+DropBlock
+Trong các bài Classification, ở layer cuối ta thường hay sử dụng DropOut để làm giảm hiện tượng Overfitting. Nhưng trong Convolution thì việc bỏ đi random một số vị trí ở trong feature map có vẻ không hợp lý lắm. Vì các vị trí ở cạnh nhau trong feature map có tương quan cao với nhau, nên việc bỏ đi các vị trí một cách random dường như sẽ không đem lại nhiều hiệu quả. DropBlock sẽ bỏ đi nhóm vị trí trong feature map thay vì chỉ bỏ đi một vị trí => gây ảnh hưởng nh tới Conv layer
+
+Neck
+Cũng giống YOLOv3, YOLOv4 có thêm neck để thực hiện phát hiện vật thể ở trên những scale khác nhau.
+YOLOv4 sử dụng 2 thành phần cho neck: SPP và PAN
+PAN
+PAN chính là FPN on steroid. Nhớ lại trong FPN, một nhánh phụ được tạo ra để đưa thông tin từ các feature ở các layer sâu vào feature ở các layer nông. Nhưng FPN lại thiếu một việc đó chính là đưa feature từ các layer nông ngược lại vào các layer sâu. Vì vậy, PAN tạo ra thêm một nhánh phụ nữa.
+
+SPP
+SPP lần đầu được giới thiệu vào năm 2014, thời đó khi mà Object Detection vẫn còn đang sử dụng các lớp Fully-Connected ở đầu ra. Với một feature map đầu ra CxHxW từ backbone, trước khi đưa vào lớp Fully-Connected để thực hiện detect, ta áp dụng 3 lần Max Pooling lên feature map đó
+
+Thông thường, với các mạng có lớp Fully-Connected, kích thước ảnh đầu vào cần phải được giữ nguyên. Tuy nhiên, với sự xuất hiện của SPP, ảnh đầu vào đã có thể có kích thước đa dạng hơn mà không cẩn phải giữ nguyên nữa, một vector có độ dài cố định vẫn được sinh ra khi đi qua SPP. Hơn nữa, SPP sử dụng các kernel có kích thước khác nhau, làm tăng cường Receptive Field.
+Nhưng từ YOLOv2, chúng ta đã không còn sử dụng lớp Fully-Connected cho đầu ra nữa. Vì vậy, YOLOv4 đã thay đổi SPP đi một chút. YOLOv4 đổi kích thước của các kernel của Max Pooling, thay vì đưa ra các feature map có kích thước 4x4, 2x2, 1x1, YOLOv4 đưa ra 4 khối feature map có kích thước HxW (cùng kích thước với feature map lấy từ backbone), mỗi khối feature map HxW này được tạo ra từ Max Pooling với kernel có kích thước (1,3,9,13). Sau đó, chúng được concatenate lại với nhau, tạo thành một khối feature map HxWx(4xC)
+
+Intersect of Union (IoU), còn được gọi là Jaccard Index, là một phép đo trong thị giác máy tính để đánh giá độ chính xác của việc phát hiện đối tượng. IoU đo lường mức độ chồng chéo giữa hai hình chữ nhật: hình chữ nhật dự đoán (bounding box dự đoán bởi mô hình phát hiện đối tượng) và hình chữ nhật thực tế (ground truth bounding box, được đánh dấu bởi con người).
+Cách tính IoU như sau:
+1. Tính diện tích giao nhau (intersection area) giữa bounding box dự đoán và bounding box thực tế.
+2. Tính diện tích hợp nhất (union area) của hai bounding box, tức là tổng diện tích của cả hai bounding box trừ đi diện tích giao nhau.
+3. Chia diện tích giao nhau cho diện tích hợp nhất.
+Giá trị IoU nằm trong khoảng từ 0 đến 1, với 0 có nghĩa là không có sự chồng chéo nào và 1 có nghĩa là sự chồng chéo hoàn hảo. Trong thực tế, một IoU cao hơn thường chỉ ra rằng mô hình phát hiện đối tượng có độ chính xác cao hơn. IoU thường được sử dụng trong các bài toán như phát hiện đối tượng, theo dõi đối tượng, và phân đoạn hình ảnh.
+
+Sử dụng nhiều anchors cho một ground truth Bounding Box
+Ở trong YOLOv3, chỉ anchor có IoU lớn nhất với ground truth Bounding Box mới được chọn làm positive anchor. Những anchors mà có IoU với ground truth Bounding Box dưới một ngưỡng (cụ thể là 0.5 ở trong các phiên bản YOLO) thì sẽ chọn là negative anchors. Còn những anchors mà có IoU lớn hơn 0.5, nhưng lại k phải là positive anchor được nói ở trên thì sẽ không có ảnh hưởng trong quá trình tính loss, ta gọi đây là những anchors bị thừa.
+Tuy nhiên trong YOLOv4, những anchors bị thừa sẽ được chọn làm positive anchors, có ảnh hưởng trong quá trình tính loss thay vì bỏ đi.
+Tác dụng của việc này vẫn chưa được làm rõ trong YOLOv4, tuy nhiên, mình có một giả thuyết rằng điều này làm giảm đi vấn đề class imbalanced giữa background và foreground thường thấy trong các mô hình Object Detection, được nói cụ thể trong Focal Loss.
+
+YOLOv4 áp dụng Label Smoothing trong việc classfication cho vật thể. Ý tưởng về Label Smoothing lần đầu được giới thiệu trong Inception-v2, ý tưởng được thể hiện trong Hình 9. Việc này làm giảm sự tự tin thái quá của model khi dự đoán một class, từ đó giảm nhẹ overfitting của model
+
+YOLOv4 sử dụng 2 kĩ thuật Data Augmentation mới: Mosaic Augmentation và Self-Adversarial Training (SAT).
+Mosaic Augmentation là một kỹ thuật tăng cường dữ liệu (data augmentation) được sử dụng trong huấn luyện mô hình nhận diện đối tượng. Kỹ thuật này bao gồm việc kết hợp bốn ảnh huấn luyện khác nhau thành một ảnh lớn hơn, tạo ra một bức tranh tổng hợp mới. Mục đích của Mosaic Augmentation là để tạo ra các tình huống phức tạp hơn, với nhiều đối tượng ở các kích thước và tỷ lệ khác nhau, giúp mô hình học cách nhận diện đối tượng trong các điều kiện đa dạng hơn và cải thiện khả năng tổng quát hóa.
+Self-Adversarial Training (SAT) là một kỹ thuật huấn luyện mô hình học sâu, nơi mô hình được huấn luyện để chống lại các nhiễu loạn tự tạo ra (self-generated adversarial perturbations). Trong SAT, mô hình trước tiên được sử dụng để tạo ra các ví dụ đối kháng (adversarial examples) - những ảnh gần giống với ảnh gốc nhưng có thêm nhiễu loạn nhỏ được thiết kế để đánh lừa mô hình. Sau đó, mô hình được huấn luyện thêm trên những ví dụ này để cải thiện độ bền vững của nó trước các cuộc tấn công đối kháng. SAT giúp mô hình học cách nhận diện và bỏ qua các nhiễu loạn không mong muốn, từ đó tăng cường khả năng phòng thủ của mô hình trước các tấn công đối kháng. Thông thường, khi ta thực hiện một forward pass của một ảnh qua model, tiếp theo ta sẽ thực hiện backward pass, cập nhật weights của model để có thể phát hiện object tốt hơn. Tuy nhiên, trong SAT, ở backward pass, ta sẽ thay đổi ảnh đầu vào của model để giảm khả năng phát hiện object của model. 
+
+YOLOv4 sử dụng Cosine learning rate schedule, một kĩ thuật thay đổi learning rate trong training. Và Giải thuật di truyền để chọn hyper-parameters tối ưu
+
+Ở YOLOv3, Regression Loss sử dụng squared loss. YOLOv4 sử dụng CIoU Loss, một phiên bản nâng cấp của GIoU Loss, giúp cải thiện thời gian training của model một cách đáng kể.
+
+--> Yolo v5 không có quá nhiều thay đổi so với YOLOv4
+Backbone: YOLOv5 cải tiến CSPResBlock của YOLOv4 thành một module mới, ít hơn một lớp Convolution gọi là C3 module
+Activation function: YOLOv4 sử dụng Mish hoặc LeakyReLU cho phiên bản nhẹ, còn sang YOLOv5, activation function được sử dụng là SiLU.
+
+Neck: 
+SPPF: YOLOv5 áp dụng một module giống với SPP, nhưng nhanh hơn gấp đôi và gọi đó là SPP - Fast (SPPF)
+Thay vì sử dụng MaxPooling song song như trong SPP, SPPF của YOLOv5 sử dụng MaxPooling tuần tự. Hơn nữa, kernel size trong MaxPooling của SPPF toàn bộ là 5 thay vì là [5,9,13] như SPP của YOLOv4.
+
+Xử lý data
+Các kĩ thuật Data Augmentation được áp dụng trong YOLOv5 bao gồm: Mosaic Augmentation, Copy-paste Augmentation, Random Affine transform, MixUp Augmentation, và các thay đổi về màu sắc cũng như là Random Flip của Albumentations
+=> Data Augmentation là một kỹ thuật trong lĩnh vực học máy và học sâu nhằm tăng cường và mở rộng tập dữ liệu huấn luyện thông qua việc tạo ra các biến thể mới từ dữ liệu hiện có. Mục đích của Data Augmentation là để tạo ra một tập dữ liệu lớn hơn và đa dạng hơn, giúp mô hình học được các đặc trưng tổng quát hơn và giảm nguy cơ overfitting.
+
+EMA Weight
+Thông thường, khi training, ta sẽ ngay lập tức cập nhất weight của model trong quá trình backward pass. Tuy nhiên, trong EMA, ta tạo ra một model y hệt với model chúng ta sử dụng trong training, nhưng cách cập nhật weight sẽ tuân theo công thức Exponential Moving Average (EMA)
+
+Anchor Box
+Anchor Box trong YOLOv5 nhận được 2 sự thay đổi lớn.
+Đầu tiên là sử dụng Auto Anchor, một kĩ thuật áp dụng giải thuật di truyền (GA) vào Anchor Box ở sau bước k-means để Anchor Box hoạt động tốt hơn với những custom dataset của người dùng, chứ không còn hoạt động tốt ở mỗi COCO nữa
+
+
+-> Cơ chế train image bao gồm các bước sau:
+Phân chia tập dữ liệu thành hai tập: tập huấn luyện và tập kiểm tra. Tập huấn luyện được sử dụng để đào tạo mô hình, và tập kiểm tra được sử dụng để đánh giá hiệu suất của mô hình.
+Tạo các bounding box dự đoán cho các hình ảnh trong tập huấn luyện. Bounding box dự đoán được tạo bằng cách sử dụng mô hình YOLO v8 trước khi đào tạo.
+Sử dụng tập dữ liệu các bounding box dự đoán và các bounding box thực tế để tính toán hàm mất mát. Hàm mất mát là một số đo mức độ khác biệt giữa các bounding box dự đoán và các bounding box thực tế. 
+Sử dụng hàm mất mát để cập nhật các tham số của mô hình. Quá trình này được gọi là học máy.
+Lặp lại cho đến khi mô hình đạt được hiệu suất mong muốn.
+
+
+
+-> Yolo v8 xuất phát từ yolo v5:
+Kiến trúc của YOLO v5 và YOLO v8 đều chia hình ảnh thành một lưới 3x3 ô. Tuy nhiên, có một số điểm khác biệt chính giữa hai kiến trúc:
+
+YOLO v5
+Sử dụng kiến trúc CNN Darknet-53: Kiến trúc Darknet-53 là một kiến trúc CNN hiệu quả được thiết kế cho nhiệm vụ phát hiện đối tượng.
+Dự đoán các bounding box và các lớp của các đối tượng trong mỗi ô lưới: YOLO v5 dự đoán các bounding box và các lớp của các đối tượng trong mỗi ô lưới.
+Sử dụng kỹ thuật IoU Loss để tính toán hàm mất mát: Kỹ thuật IoU Loss là một kỹ thuật hiệu quả để tính toán hàm mất mát cho nhiệm vụ phát hiện đối tượng.
+
+YOLO v8
+Sử dụng kiến trúc CNN EfficientNet: Kiến trúc EfficientNet là một kiến trúc CNN hiệu quả và có thể mở rộng.
+Dự đoán các bounding box và các lớp của các đối tượng trong nhiều lớp: YOLO v8 dự đoán các bounding box và các lớp của các đối tượng trong nhiều lớp. Điều này giúp cải thiện độ chính xác của mô hình.
+Sử dụng kỹ thuật xác định lại để tinh chỉnh các bounding box và các lớp của các đối tượng: Kỹ thuật xác định lại giúp cải thiện độ chính xác của mô hình bằng cách tinh chỉnh các bounding box và các lớp của các đối tượng.
+
+=> Nhìn chung, YOLO v8 là một kiến trúc hiệu quả hơn YOLO v5. YOLO v8 sử dụng kiến trúc CNN hiệu quả hơn, dự đoán các bounding box và các lớp của các đối tượng trong nhiều lớp, và sử dụng kỹ thuật xác định lại để cải thiện độ chính xác của mô hình.
+
+Kiến trúc này bao gồm ba giai đoạn chính:
+
+Giai đoạn đầu tiên: Giai đoạn này sử dụng một mạng CNN để trích xuất các đặc trưng từ hình ảnh.
+Giai đoạn thứ hai: Giai đoạn này sử dụng một mạng CNN khác để dự đoán các bounding box và các lớp của các đối tượng trong hình ảnh.
+Giai đoạn thứ ba: Giai đoạn này sử dụng một mạng CNN khác để tinh chỉnh các bounding box và các lớp của các đối tượng trong hình ảnh.
+
+Trước đó, YOLOv7 được đánh giá là gặp khó khăn trong việc phát hiện các đối tượng nhỏ, ở các tỷ lệ khác nhau, dưới sự thay đổi về ánh sáng hoặc các điều kiện môi trường khác. Yolo v8 hiện là hoàn hảo nhất
+
+
+
+-> YOLOv8 là phiên bản mới nhất trong dòng mô hình YOLO. YOLO là viết tắt của cụm từ “You Only Look Once”, tức chỉ khả năng dự đoán tất cả các đối tượng có mặt trong một hình ảnh chỉ trong một lần truyền dữ liệu.
+Điểm khác biệt chính mà YOLO mang lại là cách đặt vấn đề. Tác giả đã đặt lại vấn đề phát hiện đối tượng dưới dạng một bài toán hồi quy (dự đoán tọa độ hộp giới hạn) thay vì phân loại.
+Các mô hình YOLO được huấn luyện trước trên các bộ dữ liệu lớn như COCO và ImageNet. Điều này cho phép chúng vừa có khả năng cung cấp dự đoán cực kỳ chính xác với các lớp đã được huấn luyện, vừa có thể học các lớp mới một cách tương đối dễ dàng.
+Các mô hình YOLO cũng có tốc độ huấn luyện nhanh hơn, với độ chính xác cao và kích thước mô hình nhỏ. Chúng có thể được huấn luyện trên các GPU đơn, do đó dễ tiếp cận hơn đối với các nhà phát triển.
+
+Ta cũng có thể tự hình dung kiến trúc YOLOv8 bằng cách chuyển đổi nó sang định dạng ONNX. ONNX viết tắt của Open Neural Network Exchange. Đây là định dạng mở được sử dụng để biểu thị các mô hình học máy. Nó có thể được xem như một đại diện chung cho các mô hình ML, bởi vì tính phổ biến cho bất kỳ mô hình nào, dù code mô hình được viết trong PyTorch, TensorFlow hoặc các framework nào khác.
+
+So sánh những thay đổi trong YOLOv8 với phiên bản trước của nó, YOLOv5. Có hai thay đổi chính:
+Anchor-Free Detection
+Mosaic Augmentation
+
+
+--> 1. Anchor-Free Detection
+Để hiểu về Anchor-Free Detection, chúng ta trước tiên cần hiểu về anchor boxes.
+Anchor boxes giải quyết một vấn đề lớn trong phát hiện đối tượng. Trước khi có anchor boxes, một đối tượng được gán cho một ô lưới chứa điểm giữa của đối tượng đã cho. Nếu hai đối tượng có cùng điểm trung tâm, việc xây dựng hộp giới hạn và phân bổ chúng vào các lớp riêng lẻ trở nên rất phức tạp.
+Ví dụ, xem xét tình huống trong đó một con người và một con ngựa có cùng điểm trung tâm. Làm thế nào chúng ta nên xây dựng một hộp giới hạn trong trường hợp như vậy?
+
+Anchor boxes có thể được coi là các mẫu cookie-cutter. Xem xét trường hợp ta có hai anchor boxes: Anchor Box 1 và Anchor Box 2.
+Bây giờ, ta sẽ kiểm tra trong danh sách các anchor boxes xem anchor boxes nào có chỉ số IoU cao nhất với hộp giới hạn thực tế và gán anchor boxes đó cho lớp tương ứng.
+Như được minh họa dưới đây, anchor boxes 1 hữu ích cho các hình dáng ngang như ngựa, và anchor boxes 2 hữu ích cho các hình dáng dọc thẳng như con người.
+
+Anchor box nói chung đã cải thiện quá trình huấn luyện bằng cách tăng mAP (mean Average Precision). Chúng đã được tích hợp vào các phiên bản YOLO trước đó. Tuy nhiên, trong YOLOv8, kiến trúc đã bỏ qua việc sử dụng Anchor box với một số lý do:
+
+Thiếu tính tổng quát: Huấn luyện với các Anchor box có sẵn làm cho mô hình trở nên cứng nhắc và khó phù hợp với dữ liệu mới.
+Không có Anchor box phù hợp trong tình huống không đều: Các tình huống không đều không thể được ánh xạ một cách rõ ràng bằng các Anchor box hình đa giác.
+
+Anchor-Free Detection là một phương pháp trong lĩnh vực nhận diện đối tượng không sử dụng anchor. Thay vì sử dụng các anchor để dự đoán vị trí và kích thước của đối tượng, phương pháp này sử dụng các phương pháp không cần anchor như CenterNet hoặc FCOS để nhận diện đối tượng một cách hiệu quả và chính xác hơn.
+
+Trong quá trình huấn luyện, YOLOv8 thực hiện nhiều kỹ thuật tăng cường cho ảnh huấn luyện. Một trong những kỹ thuật này là tăng cường dữ liệu mosaic.
+Tăng cường dữ liệu mosaic là một kỹ thuật đơn giản, trong đó bốn hình ảnh khác nhau được nối lại với nhau và đưa vào mô hình như đầu vào. Điều này giúp mô hình học được các đối tượng thực sự từ các vị trí khác nhau và trong trạng thái bị che khuất.
+Việc thực hiện tăng cường dữ liệu Mosaic đã cho thấy làm giảm hiệu suất, vì vậy nó đã được chuyển sang sử dụng cho 10 epoch cuối cùng.
+
+Khả năng phân loại mạnh mẽ của nó xuất phát từ việc được huấn luyện trước trên tập dữ liệu ImageNet lớn, chứa hàng triệu hình ảnh.
+
+Sử dụng đơn giản:
+from ultralytics import YOLO
+model = YOLO("yolov8n-cls.pt") # Chọn module thích load, segmentation, classification, detection sẽ khác nhau
+result = model("SOURCE_PATH") # lấy ra kết quả
+
+
+-> Kiến trúc yolo v8
+Các thuật ngữ "backbone", "neck", và "head" mô tả các phần khác nhau của mạng lưới nơ-ron học sâu:
+Backbone:
+- Backbone là phần cốt lõi của mạng, thường là một mạng nơ-ron tích chập sâu (CNN) được sử dụng để trích xuất đặc trưng từ ảnh đầu vào. Backbone có thể là các mạng đã được huấn luyện trước như ResNet, Darknet, VGG, hoặc một kiến trúc tùy chỉnh.
+- Mục đích của backbone là học các đặc trưng cấp thấp (như cạnh, góc) đến cấp cao (như đặc trưng của đối tượng) từ dữ liệu.
+
+Neck:
+- Neck là phần của mô hình nằm giữa backbone và head. Nó thường bao gồm các lớp bổ sung hoặc cấu trúc mô-đun như Feature Pyramid Networks (FPN) hoặc Path Aggregation Network (PAN) để kết hợp thông tin đặc trưng từ nhiều tỷ lệ khác nhau.
+- Neck giúp cải thiện khả năng phát hiện đối tượng ở các kích thước khác nhau và thường làm tăng độ chính xác của mô hình.
+
+Head:
+- Head là phần cuối cùng của mô hình, chịu trách nhiệm đưa ra các quyết định dựa trên đặc trưng đã được trích xuất. Trong YOLO, head thường bao gồm các lớp tích chập để dự đoán bounding boxes, độ tin cậy của các phát hiện (confidence scores), và phân loại đối tượng.
+- Head của YOLO thực hiện ba nhiệm vụ chính: phân loại đối tượng, dự đoán bounding boxes, và tính toán độ tin cậy cho mỗi phát hiện.
+
+Backbone chứa nhiều lớp pooling và convolution layer. 
+
+Trong YOLOv8, ta có các kích thước mô hình khác nhau như yolov8- n - nano, s - small, m - medium, l - large và x - extra large.
+Kích thước mô hình tương ứng tuyến tính với mAP và nghịch đảo tương ứng với thời gian suy luận. Các mô hình lớn mất nhiều thời gian suy luận để phát hiện đối tượng một cách chính xác với mAP cao hơn. Các mô hình nhỏ có thời gian suy luận nhanh hơn nhưng có mAP tương đối thấp hơn. Các mô hình lớn hơn tốt hơn nếu chúng ta có ít dữ liệu. Các mô hình nhỏ hơn hiệu quả hơn nếu ta có ít không gian (các tình huống biên).
+
+
+

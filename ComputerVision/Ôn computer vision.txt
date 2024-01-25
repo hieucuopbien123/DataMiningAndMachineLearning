@@ -1,0 +1,615 @@
+Edge detection:
+Có 1 bức ảnh 7x7, 2 filter 3x3 => match với các ô và cho ra kết quả 5x5. Apply lần lượt K1 rồi K2, hoặc song song, với các pp nhân, cộng, trừ tùy ta implement
+
+
+Có nhiều loại filter [trắng|đen], mỗi cái là 1 dạng định hình kích thước cửa sổ. Dựa vào đó, Haar like xác định sự chuyển màu trong từng phần của bức ảnh ở nhiều góc độ.
+1 window có thể có nhiều kích thước khác nhau ở bất cứ vị trí nào trong ảnh. Công thức xác định số lượng feature bằng số cách xếp các window vào trong ảnh. 
+Viết ct Python hoặc dùng công thức slide 3 dành cho ảnh 24x24 (bảng) để xác định số lượng feature
+VD width của window phải là số chẵn trong TH 1a vì để có thể chia đôi thành 2 nửa đen trắng và xác định sự chuyển màu giữa 2 pixel liên tục
+
+
+
+# Intro
+-> Level of vision:
+1. Cấp độ thị giác thấp (Low level vision): Còn được gọi là xử lý tín hiệu hình ảnh.
+Xử lý các đặc điểm cơ bản của ảnh như cường độ ánh sáng, màu sắc, hướng cạnh, điểm ảnh.
+Các thuật toán thường được sử dụng ở cấp độ này bao gồm: lọc nhiễu, phát hiện cạnh, tính toán gradient, histogram.
+Mục tiêu: Trích xuất các thông tin cơ bản từ ảnh mà không phụ thuộc vào ngữ nghĩa.
+
+2. Cấp độ thị giác trung (Middle level vision): Xây dựng các cấu trúc dựa trên thông tin từ cấp độ thị giác thấp.
+Nhận dạng các thành phần và đối tượng đơn giản trong ảnh như đường thẳng, góc, hình dạng cơ bản.
+Các thuật toán thường được sử dụng ở cấp độ này bao gồm: nhóm cạnh, biến đổi Hough, phân đoạn ảnh, nhận dạng mẫu.
+Mục tiêu: Tổ chức các thông tin cơ bản thành các cấu trúc có ý nghĩa hơn.
+
+3. Cấp độ thị giác cao (High level vision): Hiểu tổng thể nội dung của ảnh và mối quan hệ giữa các đối tượng.
+Nhận dạng các đối tượng phức tạp, giải thích bối cảnh, và suy luận về ý nghĩa của ảnh.
+Các thuật toán thường được sử dụng ở cấp độ này bao gồm: học máy, mạng nơ-ron, nhận dạng đối tượng, phân tích ngữ cảnh.
+Mục tiêu: Trích xuất ý nghĩa và hiểu nội dung của ảnh.
+
+
+
+# Basic processing
+Image formation tái tạo 2D images của 3D object
+Ánh sáng tác động vào sensor tạo ra image
+Receptors có 2 dạng độ nhạy theo ánh sáng là cones và rods shape. Con người có receptor 4 cones
+
+Ánh sáng là bức xạ điện từ có bước sóng từ 400-700 nm là nhìn thấy được
+Ánh sáng chiếu tới object sẽ reflected phụ thuộc vào loại bề mặt của obj, phản vào lens. Sensor chứa các photodiodes convert photon sang electron, sẽ cung ra 2D sensed signal r convert analog to digital để tạo ra 1 digital image. 
+
+Sampling và quantization:
+Convert từ RGB về YUV(Y, Cr, Cb)
+
+Additive và substractive color
+
+HSV non-linear mà theo hình nón. Hue phải định nghĩa cả cận trên dưới vì nó là góc quay, saturation phải lớn hơn mức threadhold vì dưới mức đó thì màu nào cũng là xám. chúng độc lập với value intensity
+
+Lab
+
+Dưới cường độ ánh sáng khác nhau, 3 KG màu có sự thay đổi giá trị khác nhau. Độ compact ở mỗi không gian màu cũng khác nhau
+
+Để biểu diễn 1 ảnh, ta dùng 3 hàm f(x,y) cho 3 màu rgb ở vị trí x và y là xong, giá trị là cường độ của mỗi màu. Ảnh đơn sắc sẽ biểu diễn bằng 1 ma trận hcn. Ảnh đủ màu là 3 ma trận thôi
+Biểu diễn ảnh RGB trong Matlab: Im(y,x,b) => y down, right x ở channel thứ b
+
+
+
+# Image filtering
+Pixel value có 2 giá trị: 1 là grayscale, 2 là color
+3 kiểu image modification: read value of one pixel and replace it (isolated), 2 là read value of few neighbor (local), 3 là read value of all pixel (global)
+
+Các pt s=T(r)
+Với gamma correction thì phần đồ thị nào cong ảnh hưởng về phía màu khoảng rộng hơn thì màu đó take effect, vì nhiều lúc ta thấy vùng đen và vùng trắng lúc mở rộng, lúc không
+
+Histogram: bd số lượng pixel ở các mức gray level
+Image brightness
+I(u,v) = intensity
+
+Công thức tính contrast
+Make more contrast bằng cách equalize histogram, xây dựng công thức
+History gram equalize khiến ảnh nhìn object rõ hơn nhưng kp lúc nào cũng tốt. Họ gặp vấn đề với histogram matching và histogram specification rằng nên tạo ra 1 histogram như thế nào là ổn chứ kp lúc nào cũng equalize đúng 1 mốc với mọi bức ảnh
+
+Histogram statistics nhiều công thức
+Implement histogram statistic => lấy cục 3x3 tính với từng pixel
+Contrast enhancement for RBG color image, nên convert sang kgm Lab rồi xử lý trên trường luminance là xong
+
+Image filtering trên 2 trường spatial(làm mượt) và frequency(khử nhiễu)
+Spatial convolution: Ốp cái ma trận 3x3 mà mask vào từng ô, weighted sum bản chất là nhân 2 ma trận. Các ô ở góc có 2 cách xử lý là để là 0 hoặc để là ô cạnh nó (ở ảnh gốc) và ốp nhân ma ma trận tiếp nới rộng ra 1 ô
+Spatial correlation tương tự spatial convolution nhưng spatial convolution là weighted sum của các ô đối xứng nhau, còn spatial correlation là weighted sum với ma trận ở các ô cùng vị trí tương ứng. 
+Spatial convolution có thể ốp liên tiếp các filter, mỗi cái gọi là 1 kernel 
+
+Smooth filtering có nhiều loại, basic nhất là average mean filtering, ta nhân với ma trận 3x3 toàn số 1, sau đó chia 9 (trung bình số lượng pixel) là có ảnh mờ. Tăng kích thước ma trận để mờ nhiều hơn.
+Weighted average filtering thì mà trận k còn toàn số 1 nữa mà gần tâm thì số lớn hơn. 
+Gaussian filtering tương tự nhưng ma trận kỳ cục hơn và công thức riêng
+
+Sharpening filter 2 cách đạo hàm bậc 1 và bậc 2 đều giúp làm sắc các đường nét vì chỉ đồ thị có đoạn thay đổi màu là có sự biến động
+First derivative: smooth filer trước r ốp đạo hàm bậc 1.
+Second derivative: Laplacian filtering với công thức phức tạp. 
+
+Median filter: làm mượt bằng cách remove spikes, giảm noise. Là 1 cách chỉ khử spike, tức yếu hơn mean khi mean tính cả spike và lấy trung bình nhưng như v thì mean sẽ k khử nhiễu hoàn toàn
+
+Max/min filter: max là đổi central pixel với darkest, min là lighest. Tức các màu spikes sẽ mang 1 màu đậm nhất or nhạt nhất và nổi lên trên bức ảnh.
+
+
+
+# Image filtering 2
+AND OR operator
+Image addition thực tế là cộng cường độ lại thôi mà, image substraction, multiplication
+Average image g = f + n 
+
+Binary image. Threshold method để tạo binary image thực chất là quá ngưỡng thì gán trắng, còn lại là đen.
+Dilation mở rộng xđ object. Dùng structuring element có shape và apply vào từng pixel, thêm vào các ô xung quanh
+Erosion remove noise. Tương tự ốp structuring element có shape vào các ô k là object để remove các ô lân cận là object
+=> Open và close chỉ là ốp 2 operator trên
+
+Connected component labeling là thuật toán duyệt từng pixel và đánh số các pixel thuộc cùng 1 vùng để biết được số vùng. Phải duyệt qua 2 lần vì lần 1 chỉ biết top, right của 1 ô. Tức số lượng neighbor ta lấy là top right là 2.
+Họ bảo edge labeling dùng 8, region labeling dùng 4. Tức lần duyệt image thứ nhất ta dùng đến top left, top right nữa luôn cho edge labeling
+
+Frequencies là sự thay đổi intensity của màu trong ảnh, edge thì lớn, vùng bth thì nhỏ. Có frequency thì ảnh bd được dạng signal
+Phân tích signal thì ta dùng Fourier. Bản chất là mọi signal đều biểu diễn được dưới dạng Asin+Bcos nên nó cứ thêm các hàm sin cos vào với frequency xđ cho đến khi ra được sigal ban đầu là đươc
+Chỉ cần cân magnitude chỉ định số lượng signal và phase là spatial information trong công thức là được 
+
+Fourier transform xong ra bức ảnh có mấy cục ở tâm. Kết hợp các bức ảnh đó chính là ra bức ảnh gốc, khôi phục lại được ra ảnh gốc
+
+Dùng Fourier vào filter: Convert từ spatial domain sang frequency domain rồi dùng fourier r lại transform ngược về spatial vì chỉ làm Fourier filter trên frequency được thôi
+Trong quá trình sửa frequency, ta có thể làm tùy ý như low-pass filter, high-pass filter. Các hình đen trắng ở tâm kia là phổ của hàm filter. Ta cho ảnh qua các hàm phổ đó để bỏ đi tần số cao
+
+Ringing problem trong filter image là hiện tượng xuất hiện các vạch nhỏ hoặc các đường nét không mong muốn xung quanh các cạnh hoặc biên của hình ảnh sau khi áp dụng bộ lọc. Điều này có thể xảy ra khi bộ lọc tạo ra các dao động không mong muốn trong không gian tần số của hình ảnh, dẫn đến hiện tượng vạch nhỏ hoặc đường nét không rõ ràng. Điều này có thể làm giảm chất lượng của hình ảnh và gây ra hiện tượng mất thông tin hoặc biến dạng hình ảnh. Để giảm thiểu hoặc loại bỏ ringing problem, cần sử dụng các kỹ thuật xử lý hình ảnh và lựa chọn bộ lọc phù hợp.
+=> Gaussian filter giúp k có ringing
+
+Trong spatial domain, các bộ lọc được áp dụng trực tiếp lên các pixel của ảnh. Các bộ lọc này thay đổi giá trị của các pixel dựa trên giá trị của các pixel xung quanh nó. Các phép tính và thuật toán trong spatial domain tốn nhiều thời gian tính toán và có thể gây ra nhiễu và mất thông tin.
+Trong frequency domain, ảnh được chuyển đổi từ không gian thời gian sang không gian tần số bằng cách sử dụng biến đổi Fourier. Các bộ lọc được áp dụng trên biểu diễn tần số của ảnh, và sau đó ảnh được chuyển đổi trở lại không gian thời gian. Cách tiếp cận này thường nhanh hơn và cho kết quả tốt hơn trong việc loại bỏ nhiễu và cải thiện chất lượng ảnh.
+Do đó, cách thức và kết quả của việc lọc ảnh trong spatial domain và frequency domain là khác nhau.
+
+Trong xử lý ảnh, band-pass filtering là một phương pháp để loại bỏ các tần số không mong muốn và chỉ giữ lại các tần số nằm trong một khoảng cụ thể, gọi là "band-pass". Band-pass filtering trong không gian tần số thường được thực hiện thông qua việc sử dụng biến đổi Fourier. Quá trình band-pass filtering trong xử lý ảnh bao gồm các bước sau:
+Chuyển đổi ảnh từ không gian thời gian sang không gian tần số bằng cách sử dụng biến đổi Fourier.
+Trong không gian tần số, sử dụng một bộ lọc band-pass để loại bỏ các tần số thấp và cao, chỉ giữ lại các tần số ở giữa.
+Sau đó, chuyển đổi ảnh từ không gian tần số trở lại không gian thời gian bằng cách sử dụng ngược biến đổi Fourier.
+Kết quả của band-pass filtering là ảnh đã được lọc, trong đó chỉ còn lại các tần số nằm trong khoảng band-pass đã được chỉ định. Điều này có thể giúp loại bỏ nhiễu và các chi tiết không mong muốn, giữ lại các cấu trúc và đặc điểm quan trọng trong ảnh. Band-pass filtering thường được sử dụng trong việc cải thiện chất lượng ảnh và loại bỏ nhiễu trong xử lý ảnh.
+
+Hybrid images là một kỹ thuật trong xử lý ảnh để tạo ra hình ảnh mà khi nhìn ở khoảng cách xa, chúng trông giống như một hình ảnh, nhưng khi nhìn ở khoảng cách gần, chúng trông giống như một hình ảnh khác. Kỹ thuật này tạo ra hiệu ứng "hình ảnh kép", khi mà hai hình ảnh được kết hợp lại với nhau trong một cách đặc biệt để tạo ra hiệu ứng này.
+Để tạo ra hybrid images, hai hình ảnh khác nhau được kết hợp lại thông qua việc áp dụng bộ lọc band-pass cho hình ảnh thô (hình ảnh ở khoảng cách gần) và bộ lọc low-pass cho hình ảnh mịn (hình ảnh ở khoảng cách xa). Kết quả là khi nhìn từ khoảng cách xa, chỉ có tần số thấp được hiển thị và khi nhìn từ khoảng cách gần, tần số cao cũng được hiển thị, tạo ra hiệu ứng đổi độ sắc nét của hình ảnh.
+Hybrid images có ứng dụng trong nhiều lĩnh vực, bao gồm nghệ thuật, xử lý ảnh, và thị giác học. Đây là một ví dụ thú vị về cách mà xử lý ảnh có thể tạo ra hiệu ứng quan trọng trong việc thị giác và cảm nhận của con người.
+
+
+
+***Giải thích chi tiết từ slide 3 part 2 đổ đi:
+PCA, viết tắt của Principal Component Analysis, là một phương pháp thống kê được sử dụng để giảm chiều dữ liệu và tìm ra các thành phần chính quan trọng. Phương pháp này thực hiện việc chuyển đổi không gian dữ liệu ban đầu thành một không gian chiều thấp hơn bằng cách xây dựng các chiều mới là sự kết hợp tuyến tính của các đặc trưng ban đầu.
+Mục tiêu chính của PCA là xem xét các chiều độc lập mà theo đó dữ liệu có phương sai lớn nhất (tức là biến động lớn nhất). Bằng cách này, PCA giúp tập trung vào các chiều dữ liệu quan trọng nhất và loại bỏ sự tương quan giữa các biến, từ đó giảm thiểu sự mất mát thông tin khi giảm chiều dữ liệu.
+
+PCA, hay Principal Component Analysis, cho phép chuyển đổi một số biến có thể tương quan thành một số lượng nhỏ hơn các biến không tương quan gọi là các thành phần chính. Thành phần chính đầu tiên giải thích càng nhiều biến động có thể trong dữ liệu. Mỗi thành phần tiếp theo (vuông góc với các thành phần trước đó) giải thích càng nhiều biến động còn lại có thể trong dữ liệu. Điều này giúp tập trung vào các thành phần chính quan trọng và giảm thiểu sự tương quan giữa các biến, từ đó giảm thiểu sự mất mát thông tin khi giảm chiều dữ liệu.
+
+Tính giá trị trung bình r tính ra ma trận phương sai. Tính ra eigenvalues và eigenvectors và săp xếp theo cường độ. Sau đó chỉnh sửa eigenvectors sao cho mọi eigenvalue luôn nhỏ hơn mức threshold
+
+Các hình ảnh khuôn mặt, khi được xem như là vector của các giá trị điểm ảnh, thường là chiều rất lớn - ví dụ, một hình ảnh kích thước 100x100 điểm ảnh sẽ tạo ra một vector 10,000 chiều. Tuy nhiên, chỉ một phần nhỏ của không gian vector đa chiều này thực sự tương ứng với các hình ảnh khuôn mặt hợp lệ. Điều này có nghĩa là các vector hợp lý thể hiện khuôn mặt con người chỉ chiếm một không gian con nhỏ trong không gian vector đa chiều toàn bộ.
+Ta cần tìm ra một cách để biểu diễn và làm việc với dữ liệu hình ảnh khuôn mặt mà không cần phải xử lý toàn bộ độ phức tạp của không gian vector đa chiều. Việc này có thể giúp giảm đáng kể số lượng tính toán cần thiết và cải thiện hiệu suất của các thuật toán xử lý hình ảnh, như nhận dạng khuôn mặt hoặc phân loại biểu cảm.
+
+Eigenfaces là một phương pháp sử dụng trong nhận dạng khuôn mặt. Ý tưởng chính của Eigenfaces là giả định rằng hầu hết các hình ảnh khuôn mặt nằm trên một không gian con chiều thấp được xác định bởi các vector có phương sai tối đa. Sử dụng phân tích thành phần chính (PCA) để xác định các vector hoặc "eigenfaces" u1,...,uk mà tạo ra không gian con đó. Sau đó, tất cả các hình ảnh khuôn mặt trong tập dữ liệu được biểu diễn dưới dạng tổ hợp tuyến tính của các eigenfaces.
+=> Tính trung bình rồi + tuyến tính các eigenfaces tạo lại ảnh gốc
+
+
+
+# Feature detection
+Edge qtr
+
+Intensity profile là tập hợp các giá trị cường độ được lấy từ các điểm ảnh cách đều nhau dọc theo một đoạn thẳng hoặc đường điều chỉnh đa đường trong một hình ảnh. Điều này giúp xác định sự thay đổi cường độ và đạo hàm của hình ảnh, từ đó giúp xác định các cạnh trong hình ảnh.
+
+Để tìm cạnh trong một hình ảnh, chúng ta có thể sử dụng hồi quy đạo hàm để tìm đạo hàm của hình ảnh theo chiều x và y. Sau đó, chúng ta tính toán độ lớn của đạo hàm để xác định cường độ độ dốc tại mỗi điểm ảnh. Điều này giúp chúng ta xác định các cạnh trong hình ảnh.
+
+Một cạnh là một nơi có sự thay đổi nhanh chóng trong hàm cường độ của hình ảnh. Điều này có thể được xác định thông qua hai phương pháp:
+1) Cực đại của đạo hàm bậc nhất: Điểm cực đại của đạo hàm bậc nhất của hàm cường độ tại một điểm ảnh cho biết sự thay đổi cường độ lớn nhất tại điểm đó, có thể chỉ ra sự xuất hiện của một cạnh.
+2) Zero-crossing của đạo hàm bậc hai: Điểm zero-crossing của đạo hàm bậc hai của hàm cường độ tại một điểm ảnh cho biết sự thay đổi từ tăng đến giảm hoặc từ giảm đến tăng, có thể chỉ ra sự xuất hiện của một cạnh.
+Những phương pháp này giúp xác định vị trí của các cạnh trong hình ảnh dựa trên sự thay đổi cường độ.
+=> Nch là dùng 2 đạo hàm
+
+Gradient của một hình ảnh là một vector chứa thông tin về cường độ và hướng thay đổi nhanh nhất của cường độ tại mỗi điểm ảnh trong hình ảnh. Gradient của một hình ảnh có thể được tính toán bằng cách sử dụng các phép toán đạo hàm trên hình ảnh, như đạo hàm theo chiều x và y, để xác định cường độ và hướng của sự thay đổi cường độ tại mỗi điểm ảnh.
+=> Gradient direction có công thức tính góc cụ thẻ, cường độ gradient là edge strength
+
+"Effects of noise" đề cập đến tác động của nhiễu lên quá trình phát hiện cạnh trong hình ảnh. Nhiễu có thể làm mờ hoặc làm thay đổi cường độ của các điểm ảnh, gây khó khăn trong việc xác định các cạnh chính xác. Điều này có thể dẫn đến việc phát hiện cạnh không chính xác hoặc thiếu sót trong việc xác định cạnh. Để giải quyết vấn đề này, việc làm mịn hình ảnh trước khi phát hiện cạnh có thể giúp giảm thiểu tác động của nhiễu.
+
+Định lý đạo hàm của phép tích chập (Derivative theorem of convolution) là một tính chất quan trọng trong xử lý hình ảnh. Nó cho phép chúng ta tính đạo hàm của một hình ảnh bằng cách tính tích chập của hình ảnh với một bộ lọc đạo hàm. Điều này giúp giảm thiểu độ phức tạp tính toán, vì thay vì tính đạo hàm trực tiếp của hình ảnh, chúng ta có thể tính tích chập của hình ảnh với bộ lọc đạo hàm. Định lý này cung cấp một tính chất quan trọng để hiểu cách tính toán đạo hàm của hình ảnh trong xử lý hình ảnh và computer vision.
+
+Sobel Operator: Sobel Operator sử dụng kết hợp giữa làm trơn Gaussian và việc tính đạo hàm để tìm ra đạo hàm của ảnh theo hướng x và y.
+Kết quả của Sobel Operator là gradient magnitude, tức là độ lớn của gradient cho mỗi điểm ảnh.
+Sobel Operator giúp giảm thiểu ảnh hưởng của nhiễu.
+=> Prewitt Operator tương tự nhưng k thg kết hợp với Gaussian như Sobel
+
+Có 2 kiểu là 1st và 2nd derivative:
+Vấn đề chính với Simple edge detector sử dụng 1st derivative là:
+Localization kém: Khi sử dụng ngưỡng để chọn cạnh, có thể xảy ra việc nhiều điểm ảnh kề nhau được chọn, dẫn đến việc cạnh không được xác định chính xác.
+Ưu tiên hướng: Giá trị ngưỡng có thể ưu tiên một số hướng hơn những hướng khác, dẫn đến việc cạnh nghiêng có thể bị bỏ sót nhiều hơn so với cạnh ngang hoặc đứng.
+Điều này có thể dẫn đến việc phát hiện cạnh không chính xác và không đáng tin cậy. Do đó, các phương pháp phát hiện cạnh tiên tiến hơn như Canny detector hoặc sử dụng 2nd derivative có thể được ưa chuộng hơn để giải quyết những vấn đề này.
+
+Edge detector with 2nd derivative là một phương pháp phát hiện cạnh trong xử lý ảnh dựa trên việc tính toán đạo hàm bậc hai của ảnh. Phương pháp này sử dụng các bộ lọc Laplacian hoặc các bộ lọc tương tự để tính toán đạo hàm bậc hai của ảnh. Cách thức hoạt động:
+Convolution với bộ lọc Laplacian: Ảnh gốc được tính tích chập với một trong hai bộ lọc để tính toán đạo hàm bậc hai.
+Phát hiện cạnh: Sau khi tính toán đạo hàm bậc hai của ảnh, các điểm cực trị hoặc các điểm giao nhau với giá trị bằng 0 được xác định là cạnh.
+Ưu điểm:
+Phương pháp này tạo ra một phản ứng duy nhất cho mỗi cạnh thực sự, giúp giảm thiểu việc phát hiện cạnh không chính xác.
+Nó cũng có khả năng phát hiện cạnh một cách chính xác dưới ảnh hưởng của nhiễu và che phủ một phần.
+Nhược điểm:
+Có thể nhạy cảm với nhiễu.
+Có thể tạo ra các phản ứng không chính xác nếu ảnh chứa nhiều chi tiết hoặc cấu trúc phức tạp.
+Tóm lại, edge detector with 2nd derivative là một phương pháp phổ biến để phát hiện cạnh trong xử lý ảnh, và nó có thể được sử dụng để tạo ra các kết quả phát hiện cạnh chính xác trong nhiều trường hợp.
+
+"Optimal" edge detector được đề cập có thể ám chỉ đến Canny edge detector, một trong những phương pháp phổ biến nhất và được coi là "tối ưu" trong việc phát hiện cạnh trong xử lý ảnh. Canny edge detector được thiết kế để đáp ứng ba tiêu chí quan trọng:
+Phát hiện tốt: Bộ phát hiện cạnh tối ưu cần giảm thiểu xác suất phát hiện cạnh giả do nhiễu và đồng thời giảm thiểu xác suất bỏ sót cạnh thực sự.
+Định vị tốt: Các cạnh phát hiện được cần nằm gần nhất có thể với cạnh thực sự trong ảnh.
+Phản ứng duy nhất: Mỗi điểm cạnh chỉ được phản ứng một lần, giúp giảm thiểu số lượng cực đại cục bộ xung quanh cạnh thực sự.
+Canny edge detector thực hiện theo các bước sau:
+Làm mờ ảnh bằng bộ lọc Gaussian để giảm nhiễu.
+Tính toán độ lớn gradient của ảnh bằng cách sử dụng bộ lọc Sobel.
+Xác định hướng gradient tại mỗi điểm ảnh.
+Thực hiện non-maximum suppression để giữ lại các điểm cực đại địa phương trên đường gradient.
+Áp dụng ngưỡng hysteresis để xác định cạnh dựa trên ngưỡng cao và ngưỡng thấp, đồng thời kết hợp các điểm cạnh liên kết với nhau.
+Với các bước này, Canny edge detector đáp ứng các tiêu chí "tối ưu" và được coi là một trong những phương pháp phát hiện cạnh hiệu quả nhất trong xử lý ảnh.
+
+
+Hough transform là một phương pháp trong xử lý ảnh được sử dụng để phát hiện các cấu trúc hình học, như đường thẳng, đường tròn, hay các hình dạng khác, trong ảnh ONLY if their parametric equation is known.
+
+Ý tưởng chính của phép biến đổi Hough (Hough transform) là chuyển đổi từ không gian tọa độ Euclid (x, y) sang không gian tham số (parametric space) (a, b) hoặc (ρ, θ) tương ứng với phương trình của đường thẳng.
+Khi chúng ta có một điểm trên cạnh trong không gian ảnh (x, y), chúng ta có thể tìm các đường thẳng mà điểm đó có thể thuộc về trong không gian tham số (a, b) hoặc (ρ, θ). Điều này cho phép chúng ta tính toán các tham số của đường thẳng mà điểm cạnh có thể nằm trên.
+Tạo ra một ma trận (hoặc ảnh) để lưu trữ số phiếu bầu (votes) cho các tham số a, b (hoặc ρ, θ) tương ứng với các đường thẳng trong không gian tham số, chúng ta có thể tìm ra các điểm cực đại trong ma trận, tương ứng với các đường thẳng trong ảnh.
+Do đó, ý tưởng chính của Hough transform là chuyển đổi từ không gian tọa độ ảnh sang không gian tham số để tìm ra các cấu trúc hình học, như đường thẳng, trong ảnh.
+
+Khi tính toán phép biến đổi Hough (Hough transform), chúng ta thực hiện các bước sau:
+Tính toán các điểm cạnh trong ảnh sử dụng các phương pháp như Sobel, Prewitt, Canny, hoặc các phương pháp phát hiện cạnh khác.
+Với mỗi điểm cạnh, tính toán các tham số của đường thẳng mà điểm đó có thể thuộc về trong không gian tham số (a, b) hoặc (ρ, θ) tương ứng với phương trình của đường thẳng.
+Tạo ra một ma trận (hoặc ảnh) để lưu trữ số phiếu bầu (votes) cho các tham số a, b (hoặc ρ, θ) tương ứng với các đường thẳng trong không gian tham số.
+Tính toán số phiếu bầu cho mỗi cặp tham số (a, b) hoặc (ρ, θ) và tăng giá trị tương ứng trong ma trận phiếu bầu.
+Tìm ra các điểm cực đại trong ma trận phiếu bầu, những điểm này tương ứng với các đường thẳng trong ảnh.
+Dựa trên thông tin từ ma trận phiếu bầu, chúng ta có thể phát hiện và trích xuất các đường thẳng từ ảnh gốc.
+
+Vấn đề với không gian tham số (a, b) trong phép biến đổi Hough phát sinh khi xử lý các đường thẳng dọc. Khi sử dụng dạng giao điểm-giảm dần của một đường thẳng (y = ax + b), tham số "a" trở nên vô hạn đối với các đường thẳng dọc. Điều này tạo ra một thách thức khi biểu diễn các đường thẳng dọc trong không gian tham số (a, b).
+Để giải quyết vấn đề này, phép biến đổi Hough thường sử dụng hệ tọa độ cực (ρ, θ) thay vì dạng giao điểm-giảm dần. Trong hệ tọa độ cực, phương trình của một đường thẳng được biểu diễn dưới dạng ρ = x * cos(θ) + y * sin(θ), trong đó ρ là khoảng cách từ gốc tọa độ đến điểm gần nhất trên đường thẳng, và θ là góc giữa trục x và đường thẳng vuông góc với đường thẳng.
+Bằng cách sử dụng hệ tọa độ cực, phép biến đổi Hough có thể biểu diễn các đường thẳng dọc một cách hiệu quả mà không gặp vấn đề về độ dốc vô hạn trong không gian tham số (a, b). Điều này cho phép phát hiện một loạt rộng các đường thẳng, bao gồm cả các đường thẳng dọc, trong ảnh.
+
+
+RANSAC (Random Sample Consensus) là một phương pháp được sử dụng trong xử lý ảnh và thị giác máy tính để ước lượng mô hình từ một tập hợp dữ liệu chứa nhiễu và outliers. Phương pháp này giúp loại bỏ ảnh hưởng của các điểm ngoại lệ và tìm ra các điểm "đồng thuận" (inliers) để sử dụng cho việc ước lượng mô hình.
+Cách thức hoạt động của RANSAC:
+1. Ngẫu nhiên chọn một nhóm điểm dữ liệu để ước lượng mô hình (ví dụ: một nhóm các điểm tương ứng giữa hai ảnh).
+2. Tính toán mô hình từ nhóm điểm này.
+3. Tìm ra các điểm đồng thuận (inliers) cho mô hình này.
+4. Nếu số lượng điểm đồng thuận đủ lớn, tính toán lại mô hình sử dụng tất cả các điểm đồng thuận.
+5. Lựa chọn mô hình có số lượng điểm đồng thuận lớn nhất.
+Phương pháp fitting method (phương pháp ước lượng) là quá trình tìm ra mô hình hoặc hàm số tốt nhất để mô tả dữ liệu. Trong ngữ cảnh của RANSAC, fitting method được sử dụng để tính toán mô hình từ các điểm dữ liệu và loại bỏ ảnh hưởng của nhiễu và outliers.
+Ví dụ về fitting method trong RANSAC có thể là việc ước lượng một đường thẳng hoặc một mặt phẳng từ một tập hợp các điểm dữ liệu, và sau đó sử dụng RANSAC để loại bỏ các điểm ngoại lệ và tìm ra mô hình tốt nhất dựa trên các điểm đồng thuận.
+
+"Fitting as search in parametric space" là quá trình tìm kiếm mô hình phù hợp trong không gian tham số. Trong quá trình này, chúng ta chọn một mô hình tham số hóa để đại diện cho một tập hợp các đặc trưng (features). Tuy nhiên, việc xác định một điểm dữ liệu có thuộc mô hình hay không không phải là một quyết định cục bộ, mà phụ thuộc vào toàn bộ mô hình.
+Có ba câu hỏi chính cần được trả lời trong quá trình tìm kiếm mô hình phù hợp:
+- Mô hình nào đại diện cho tập hợp các đặc trưng này tốt nhất?
+- Một số trường hợp, một số đặc trưng có thể thuộc về nhiều mô hình khác nhau. Làm thế nào để xác định mô hình nào sẽ được chọn để đại diện cho đặc trưng đó?
+- Có bao nhiêu mô hình cần được tìm kiếm để đại diện cho tập hợp các đặc trưng này?
+Tuy nhiên, việc tìm kiếm mô hình phù hợp trong không gian tham số là một quá trình phức tạp tính toán. Không thể kiểm tra tất cả các bộ tham số và tất cả các kết hợp đặc trưng có thể có. Do đó, việc tìm kiếm mô hình phù hợp trong không gian tham số là một vấn đề quan trọng trong xử lý ảnh và thị giác máy tính.
+
+Line Fitting trong computer vision là quá trình tìm kiếm và điều chỉnh các đường thẳng (lines) trong hình ảnh để phù hợp với dữ liệu thực tế. Điều này có thể được sử dụng để phát hiện cạnh, đánh dấu vị trí của các vật thể trong hình ảnh, hay thậm chí để xây dựng các mô hình 3D từ hình ảnh 2D. Line Fitting có thể được áp dụng trong nhiều lĩnh vực, từ xử lý hình ảnh đến thị giác máy tính và robotica.
+"Difficulty of Line Fitting" (Khó khăn trong việc phù hợp đường thẳng) là một vấn đề quan trọng trong xử lý ảnh và thị giác máy tính. Có một số thách thức cụ thể khi thực hiện việc phù hợp đường thẳng:
+1. Các điểm cạnh thừa (rác rối), nhiều mô hình: Khi có quá nhiều điểm cạnh hoặc nhiều đường thẳng có thể đi qua các điểm này, việc xác định xem điểm nào thuộc về đường thẳng nào là một thách thức. Điều này đặt ra câu hỏi về việc phân loại các điểm cạnh vào các đường thẳng tương ứng, nếu có.
+2. Chỉ có một số phần của mỗi đường thẳng được phát hiện, và một số phần bị thiếu: Khi chỉ có một số phần của đường thẳng được phát hiện trong dữ liệu và một số phần bị thiếu, việc tìm ra một đường thẳng mà nối các phần thiếu là một vấn đề khó khăn. Điều này đặt ra câu hỏi về việc làm thế nào để tìm ra một đường thẳng hoàn chỉnh dựa trên các dữ liệu mà chỉ có một phần nhỏ của đường thẳng được phát hiện.
+3. Nhiễu trong các điểm cạnh đo được, hướng: Khi có nhiễu trong các điểm cạnh hoặc hướng của chúng, việc xác định các tham số đường thẳng chính xác là một thách thức. Điều này đặt ra câu hỏi về việc làm thế nào để phát hiện các tham số đường thẳng thực sự đứng sau dữ liệu nhiễu.
+Tóm lại, việc phù hợp đường thẳng trong xử lý ảnh đôi khi đối mặt với những thách thức phức tạp do sự phức tạp của dữ liệu và nhiễu.
+
+Kỹ thuật bỏ phiếu (Voting) trong lập mô hình:
+Không khả thi để kiểm tra tất cả các tổ hợp của các đặc trưng bằng cách lập mô hình cho mỗi tập con có thể. Bỏ phiếu là một kỹ thuật chung mà chúng ta để các đặc trưng bỏ phiếu cho tất cả các mô hình tương thích với nó.
+Duyệt qua các đặc trưng, đưa ra phiếu bầu cho các tham số mô hình.
+Tìm kiếm các tham số mô hình nhận được nhiều phiếu bầu.
+Các đặc trưng nhiễu & lộn xộn cũng sẽ bỏ phiếu, nhưng thường phiếu của chúng không nhất quán với đa số các đặc trưng "tốt".
+Ổn nếu một số đặc trưng không quan sát được, vì mô hình có thể bao trùm nhiều đoạn chứ k chỉ 1 đoạn.
+
+VD dùng ransac xđ đường thẳng từ các điểm:
+Trong ví dụ về việc ước lượng đường thẳng, quá trình bao gồm việc chọn ngẫu nhiên một nhóm điểm dữ liệu để ước lượng biến đổi, tính toán transform từ nhóm điểm này, tìm các điểm "inliers" cho biến đổi này, và nếu số lượng "inliers" đủ lớn, thì tính lại ước lượng bình phương tối thiểu của biến đổi trên tất cả các "inliers" và giữ lại biến đổi có số lượng "inliers" lớn nhất.
+Quá trình lặp lại cho đến khi có kết quả tốt, trong đó số lượng "inliers" tăng lên, cho thấy mô hình ước lượng tốt hơn.
+
+Chọn số lượng sample trong ransac theo công thức.
+
+After ransac:
+RANSAC chia dữ liệu thành các điểm nội suy (inliers) và điểm ngoại lai (outliers), và tìm ra ước lượng ban đầu từ tập con nhỏ các điểm nội suy.
+Cải thiện ước lượng ban đầu này bằng cách ước lượng trên tất cả các điểm nội suy (ví dụ sử dụng phương pháp bình phương tối thiểu chuẩn).
+Nhưng việc này có thể thay đổi các điểm nội suy, nên cần lặp lại quá trình lập mô hình với việc phân loại lại các điểm nội suy/ngoại lai.
+Như vậy, sau RANSAC cần lặp lại quá trình lập mô hình và phân loại điểm cho đến khi các điểm nội suy ổn định.
+
+Nhược điểm:
+Chỉ xử lý được một tỷ lệ vừa phải các điểm ngoại lai mà không làm tăng chi phí tính toán
+Nhiều bài toán thực tế có tỷ lệ điểm ngoại lai cao (nhưng đôi khi lựa chọn ngẫu nhiên các tập con có thể giúp ích)
+=> Hough transform có thể được dùng để xử lý khi tỷ lệ điểm ngoại lai cao.
+
+
+
+# Feature extraction
+Local features và Global features là hai loại đặc trưng được trích xuất từ hình ảnh. Global features mô tả toàn bộ hình ảnh để tổng quát hóa toàn bộ đối tượng, trong khi Local features mô tả các điểm đặc trưng cục bộ (key points) trong hình ảnh để biểu diễn cấu trúc và màu sắc của vùng ảnh cụ thể.
+
+
+***Global feature: 
+Dựa vào histogram đánh giá khoảng cách và sự tương đồng giữa các đặc trưng của hình ảnh. Kc có thể dùng ct euclid, sự tương đồng có thể dùng histogram intersection.
+Histogram k qt tới scale hay rotation ảnh. K qt tới vị trí phân bố màu sắc
+
+
+Texture features đề cập đến cách phân tích và biểu diễn các đặc tính về cấu trúc của vùng ảnh. Có một số phương pháp để phân tích texture, bao gồm:
+Thống kê cấp 1: Bao gồm các thống kê dựa trên histogram như trung bình, phương sai, độ lệch, độ nhọn, năng lượng, entropy, v.v.
+Ma trận đồng xuất hiện (GLCM): Sử dụng để tìm kiếm các mẫu trong hình ảnh.
+Phân tích tần số: Sử dụng bộ lọc Gabor và các phương pháp khác để phân tích tần số của texture.
+
+
+GLCM (Grey Level Co-occurence Matrices) là một phương pháp quan trọng để phân tích cấu trúc và đặc tính về texture trong hình ảnh. Dưới đây là các khái niệm và phương pháp liên quan đến GLCM:
+Ý tưởng chính của GLCM là xác định các mức xám lặp lại nhau trong một hình ảnh với một khoảng cách và một hướng nhất định.
+
+Kích thước ma trận: GLCM thường có kích thước Ng x Ng, trong đó Ng là số mức xám trong hình ảnh (ví dụ: 256x256). Tuy nhiên, kích thước này thường được giảm xuống thành 8x8, 16x16 hoặc 32x32 để giảm chi phí tính toán. Mỗi ma trận GLCM tương ứng với một khoảng cách và một hướng cụ thể. Khoảng cách thường được chọn là 1, 2, 3 và hướng có thể là 0°, 45°, 90°, 135°, và các hướng khác.
+Tính toán GLCM: Thời gian xử lý của GLCM có thể rất lâu, đặc biệt khi sử dụng hình ảnh có kích thước lớn. Để tính toán ma trận GLCM, ta duyệt qua hình ảnh và đối với mỗi cặp điểm ảnh theo khoảng cách và hướng đã chọn, ta tăng giá trị tương ứng trong ma trận GLCM.
+Ma trận GLCM cung cấp thông tin về mức độ tương quan giữa các pixel trong hình ảnh, và thông tin này có thể được sử dụng để rút trích các đặc trưng texture quan trọng như mean, variance, energy, entropy, và nhiều thông số khác .
+Chi tiết là hình ảnh trong slide mô tả cách tăng như thế nào
+
+Ứng dụng: GLCM được sử dụng rộng rãi trong việc phân tích và mô tả texture, đặc biệt trong việc nhận dạng và phân loại hình ảnh dựa trên đặc trưng về texture.
+
+
+Shape features là một trong những phương pháp để phân tích các đặc trưng của hình ảnh. Các đặc trưng hình dạng có thể được phân thành hai loại chính: đặc trưng dựa trên đường viền và đặc trưng dựa trên vùng.
+Các đặc trưng dựa trên đường viền bao gồm các phương pháp như mã chuỗi, xấp xỉ đa giác, các thông số hình học, hồi quy góc, diện tích, chu vi, và nhiều phương pháp khác.
+Các đặc trưng dựa trên vùng bao gồm các phương pháp như các moment không đổi, và nhiều phương pháp khác.
+Các đặc trưng hình dạng có thể được sử dụng để phân loại các đối tượng trong hình ảnh, nhưng đòi hỏi phải có một bộ dữ liệu đủ lớn để huấn luyện các mô hình phân loại.
+
+
+***Local feature: 
+
+Motivation for using local features: Thay vì mô tả và so khớp toàn bộ hình ảnh, sử dụng các đặc trưng cục bộ giúp tăng tính ổn định khi xử lý các vấn đề như che khuất, biến dạng và sự biến đổi trong cùng một loại đối tượng.
+Các ưu điểm của việc sử dụng đặc trưng cục bộ bao gồm:
+1. Tăng tính ổn định khi xử lý che khuất: Thay vì phụ thuộc vào toàn bộ hình ảnh, việc mô tả và so khớp chỉ các vùng cục bộ giúp giảm ảnh hưởng của che khuất.
+2. Tăng tính ổn định khi xử lý biến dạng: Các đặc trưng cục bộ giúp giảm ảnh hưởng của biến dạng trong hình ảnh, giúp việc so khớp và nhận dạng đối tượng trở nên ổn định hơn.
+3. Tăng tính ổn định khi xử lý sự biến đổi trong cùng một loại đối tượng: Các đặc trưng cục bộ giúp tăng tính ổn định khi xử lý các biến đổi như sự thay đổi góc độ, tỷ lệ và vị trí của đối tượng trong hình ảnh.
+Như vậy, việc sử dụng đặc trưng cục bộ trong xử lý hình ảnh giúp tăng tính ổn định và độ chính xác trong việc mô tả, so khớp và nhận dạng đối tượng trong hình ảnh => Dùng cho image matching ngon
+
+Interest points: các điểm quan tâm (interest points) là các vị trí đặc biệt trên hình ảnh, thường được chọn vì chúng mang thông tin quan trọng và độc đáo về hình dạng, cấu trúc hoặc nội dung của hình ảnh. Các điểm quan tâm thường được sử dụng để rút trích đặc trưng cục bộ và thực hiện so khớp hình ảnh.
+Việc chọn các điểm quan tâm quan trọng là một bước quan trọng trong quá trình rút trích đặc trưng cục bộ, vì chúng giúp tạo ra các điểm mốc để so sánh và nhận dạng đối tượng trong hình ảnh. Các phương pháp phổ biến để tìm điểm quan tâm bao gồm phát hiện cạnh, phát hiện góc (corner detection), phát hiện điểm đỉnh (peak detection), và các phương pháp dựa trên đặc tính cục bộ của hình ảnh.
+
+Các điểm góc trong hình ảnh có tính chất lặp lại và đặc trưng, và thường được sử dụng làm điểm quan trọng để mô tả và so khớp hình ảnh. Việc tìm các góc trong hình ảnh có thể được thực hiện thông qua các phương pháp như Canny edge detection, Harris corner detection, và Shi-Tomasi corner detection.
+Các đặc điểm chính của việc tìm góc bao gồm:
+1. Tính lặp lại: Các góc cần phải được tìm ra một cách lặp lại ở các hình ảnh khác nhau của cùng một đối tượng.
+2. Địa phương: Các góc cần phải được định vị chính xác trong không gian hình ảnh.
+3. Nội dung đặc trưng: Các góc cần phải có nội dung đặc trưng để có thể phân biệt chúng với các điểm khác trong hình ảnh.
+
+Phương pháp phát hiện góc corner Harris Detector Formulation:
+Tính toán phản ứng góc (corner response) bằng cách sử dụng ma trận độ chệch (image derivatives) và ma trận tự tương quan (autocorrelation matrix). Công thức cụ thể như sau:
+Tính toán ma trận độ chệch từ đạo hàm của hình ảnh: Ix = ∂I/∂x (đạo hàm theo hướng x) và Iy = ∂I/∂y (đạo hàm theo hướng y)
+Tính toán ma trận tự tương quan (autocorrelation matrix) từ các đạo hàm của hình ảnh: M = sum(w(x,y) * w(x,y)^T)
+Tính toán phản ứng góc (corner response) dựa trên ma trận tự tương quan(Tính toán ma trận độ lớn của gradient (gradient magnitude matrix)): R = det(M) - k * trace(M)^2
+Trong đó, det(M) là định thức của ma trận M, trace(M) là tổng các phần tử trên đường chéo chính của ma trận M, và k là hằng số.
+Các điểm góc sẽ được xác định dựa trên giá trị của R, với giá trị lớn thể hiện sự xuất hiện của góc.
+
+Corner Detection by Auto-correlation là 1 pp khác:
+Phần này giải thích cách sử dụng tự tương quan để phát hiện góc trong hình ảnh. Công thức cụ thể như sau:
+Tính toán sự thay đổi trong diện mạo của cửa sổ w(x,y) khi dịch chuyển [u,v]: E(u,v) = sum(sum(w(x,y) * I(x+u,y+v) - w(x,y) * I(x,y))^2)
+Tính toán đạo hàm bậc hai của E(u,v) theo u và v. 
+Sử dụng các giá trị đạo hàm bậc hai để xác định các điểm góc. Điểm cực đại cục bộ của sự thay đổi chính là để xác định vị trí góc.
+
+
+Thuật toán Harris Detector được sử dụng để phát hiện các điểm góc trong hình ảnh và có một số tính chất quan trọng như sau:
+1. Translation invariance: Harris Detector có tính chất không đổi khi dịch chuyển hình ảnh. Điều này có nghĩa là vị trí của các điểm góc sẽ không thay đổi nếu hình ảnh được dịch chuyển.
+2. Rotation invariance: Harris Detector cũng có tính chất không đổi khi quay hình ảnh. Mặc dù hình ảnh có thể được quay, các điểm góc vẫn được xác định dựa trên các tính chất cục bộ của hình ảnh, không phụ thuộc vào hướng quay.
+3. Scale invariance: Tính chất này không được áp dụng cho Harris Detector. Harris Detector không có tính chất không đổi khi thay đổi tỷ lệ (scale) của hình ảnh. Điều này có nghĩa là khi hình ảnh được co giãn hoặc co lại, các điểm góc có thể không được phát hiện chính xác.
+Tính chất này có thể được giải thích bằng cách xem xét cách ma trận tự tương quan được tính toán từ đạo hàm của hàm mật độ xám trong cửa sổ cục bộ. Tính chất không đổi khi dịch chuyển và quay hình ảnh phản ánh tính chất cục bộ của ma trận tự tương quan, trong khi tính chất không đổi khi thay đổi tỷ lệ không được áp dụng do sự phụ thuộc vào tỷ lệ của các đặc trưng cục bộ.
+
+Automatic scale selection là một phần quan trọng trong việc xác định tỷ lệ (scale) phù hợp cho việc phát hiện đặc trưng trong hình ảnh. Khi thực hiện phát hiện đặc trưng, việc chọn tỷ lệ phù hợp là rất quan trọng để đảm bảo rằng các đặc trưng có thể được phát hiện ở mọi tỷ lệ của hình ảnh.
+Quá trình automatic scale selection bao gồm các bước sau:
+1. Thiết kế một hàm trên vùng quan tâm, có tính chất "scale invariant" (không đổi khi tỷ lệ thay đổi). Ví dụ, một hàm trung bình của độ sáng trong một vùng cụ thể có thể được sử dụng.
+2. Tìm điểm cực đại của hàm này. Điều này tương đương với việc chọn tỷ lệ vùng quan tâm mà giá trị cực đại của hàm được đạt được.
+3. Quá trình này được thực hiện độc lập trên từng hình ảnh để chọn tỷ lệ phù hợp cho việc phát hiện đặc trưng.
+Quá trình automatic scale selection giúp đảm bảo rằng các đặc trưng có thể được phát hiện ở mọi tỷ lệ của hình ảnh một cách tự động và hiệu quả.
+
+Scale-invariant detection là khả năng của một thuật toán hoặc phương pháp để phát hiện các đặc trưng trong hình ảnh mà không bị ảnh hưởng bởi sự thay đổi tỷ lệ (scale) của đối tượng trong hình ảnh. Điều này có nghĩa là các đặc trưng có thể được phát hiện ở mọi kích thước hoặc tỷ lệ của đối tượng mục tiêu mà không cần phải điều chỉnh thủ công.
+Trong ngữ cảnh của xử lý hình ảnh và thị giác máy tính, việc có các phương pháp phát hiện đặc trưng scale-invariant rất quan trọng trong nhiều ứng dụng như nhận dạng đối tượng, đo lường, và theo dõi đối tượng trong hình ảnh.
+Các phương pháp scale-invariant detection thường sử dụng các kỹ thuật như multi-scale analysis (phân tích đa tỷ lệ), tức là xem xét hình ảnh ở nhiều tỷ lệ khác nhau để đảm bảo rằng các đặc trưng có thể được phát hiện ở mọi tỷ lệ. Các thuật toán như SIFT (Scale-Invariant Feature Transform) và SURF (Speeded Up Robust Features) là các ví dụ điển hình về các phương pháp scale-invariant detection phổ biến.
+
+
+1 hàm chữ ký (signature function) hữu ích trong việc phát hiện đặc trưng hình ảnh. Trong ngữ cảnh này, "chữ ký" đề cập đến một biểu diễn số học của đặc trưng hình ảnh, cho phép chúng ta mô tả và nhận dạng các đặc trưng này trong quá trình xử lý hình ảnh. Một hàm chữ ký được coi là hữu ích nếu nó có các đặc điểm sau:
+1. Scale-invariant: Hàm chữ ký nên có khả năng mô tả đặc trưng ở mọi tỷ lệ khác nhau của hình ảnh, đảm bảo rằng đặc trưng có thể được phát hiện ở mọi kích thước.
+2. Rotation-invariant: Hàm chữ ký nên có khả năng mô tả đặc trưng một cách không đổi khi hình ảnh bị quay (xoay) một cách tùy ý.
+3. Distinctiveness: Hàm chữ ký nên tạo ra các biểu diễn số học độc đáo cho mỗi đặc trưng, giúp chúng ta phân biệt giữa các đặc trưng khác nhau.
+4. Robustness: Hàm chữ ký nên có khả năng chịu được nhiễu và biến đổi nhỏ trong hình ảnh mà vẫn giữ được tính chất phân biệt và nhận dạng đặc trưng.
+Việc xác định một hàm chữ ký hữu ích là rất quan trọng trong việc phát triển các phương pháp phát hiện và mô tả đặc trưng hình ảnh, và đóng vai trò quan trọng trong nhiều ứng dụng của xử lý hình ảnh và thị giác máy tính.
+
+Laplacian-of-Gaussian = “blob” detector đề cập đến việc sử dụng phép biến đổi Laplacian của hàm Gaussian để phát hiện các "blob" trong hình ảnh. Trong ngữ cảnh này, "blob" đề cập đến các vùng cục bộ tròn hoặc oval có độ tương phản cao hoặc thay đổi cục bộ đột ngột trong hình ảnh.
+Laplacian-of-Gaussian (LoG) được sử dụng như một phương pháp phổ biến để phát hiện các "blob" trong hình ảnh vì nó có khả năng phát hiện các vùng có biên cạnh hoặc đỉnh (peak) cục bộ. Quá trình này giúp xác định các vùng có độ biến đổi cục bộ lớn, thường là đặc trưng của các cấu trúc hình ảnh quan trọng như cạnh, góc, hoặc các đối tượng trong hình ảnh.
+Khi sử dụng phép biến đổi Laplacian-of-Gaussian, chúng ta tạo ra một hình ảnh mới bằng cách áp dụng phép Laplacian (đạo hàm bậc hai) lên một hàm Gaussian (một loại hàm smoothing). Quá trình này tạo ra một hình ảnh mới trong đó các "blob" sẽ được nhận diện dựa trên sự biến đổi cục bộ của hình ảnh.
+Việc sử dụng Laplacian-of-Gaussian như một "blob" detector là một phương pháp quan trọng trong việc phát hiện và mô tả các đặc trưng hình ảnh, và đóng vai trò quan trọng trong nhiều ứng dụng của xử lý hình ảnh và thị giác máy tính.
+
+Phương pháp "Approximate LoG with Difference-of-Gaussian (DoG)" là một phương pháp thay thế để xấp xỉ phép biến đổi Laplacian của hàm Gaussian (LoG) bằng phương pháp sử dụng sự khác biệt giữa hai hàm Gaussian, được gọi là Difference-of-Gaussian (DoG).
+Quá trình này bắt đầu bằng việc tạo ra một chuỗi các hình ảnh Gaussian được làm mờ với các tham số sigma (độ lệch chuẩn) khác nhau. Sau đó, chúng ta tính sự khác biệt giữa các hình ảnh này (trừ đi cho nhau là xong) để tạo ra chuỗi các hình ảnh Difference-of-Gaussian (DoG). Quá trình này tạo ra một biểu diễn không gian tỷ lệ (scale space) của hình ảnh, trong đó các "blob" và các đặc trưng cục bộ khác có thể được phát hiện ở các tỷ lệ khác nhau chứ k chỉ dựa vào 1 tỉ lệ
+Phương pháp DoG được sử dụng để xác định các điểm cực đại trong không gian tỷ lệ, và từ đó, phát hiện các đặc trưng quan trọng trong hình ảnh. Quá trình này giúp xác định các vùng có biên cạnh hoặc đỉnh (peak) cục bộ, thường là đặc trưng của các cấu trúc hình ảnh quan trọng như cạnh, góc, hoặc các đối tượng trong hình ảnh.
+
+Scale Invariant Detectors là các phương pháp được sử dụng để phát hiện các đặc trưng hình ảnh ở các tỷ lệ khác nhau. Xét 2 pp:
+1) Harris-Laplacian là một phương pháp phát hiện đặc trưng hình ảnh kết hợp giữa phương pháp Harris và phương pháp Laplacian. Phương pháp Harris được sử dụng để phát hiện các điểm cực đại trong không gian tỷ lệ, trong khi phương pháp Laplacian được sử dụng để phát hiện các "blob" trong hình ảnh. Kết hợp hai phương pháp này giúp tăng độ chính xác và độ tin cậy của việc phát hiện đặc trưng hình ảnh.
+2) SIFT (Scale-Invariant Feature Transform) là một phương pháp phát hiện và mô tả đặc trưng hình ảnh được giới thiệu bởi David Lowe vào năm 1999. SIFT sử dụng phương pháp DoG (Difference-of-Gaussian) để tạo ra một không gian tỷ lệ của hình ảnh, sau đó sử dụng phương pháp phát hiện điểm cực đại trong không gian tỷ lệ để phát hiện các điểm đặc trưng hình ảnh. Sau đó, SIFT sử dụng một phương pháp mô tả đặc trưng hình ảnh dựa trên histogram của các gradient hướng để tạo ra một vector đặc trưng 128 chiều cho mỗi điểm đặc trưng.
+
+Trong xử lý hình ảnh, "blob" là một thuật ngữ được sử dụng để mô tả các vùng cục bộ hoặc đối tượng không gian 2 chiều trong hình ảnh. Cụ thể, một blob thường được định nghĩa là một vùng liên tục của hình ảnh có tính chất đặc trưng, thường được xác định bởi sự thay đổi cục bộ của độ sáng hoặc màu sắc.
+Blob có thể đại diện cho các cấu trúc hình ảnh quan trọng như cạnh, góc, hoặc các đối tượng trong hình ảnh. Trong nhiều trường hợp, việc phát hiện và mô tả các blob trong hình ảnh là một bước quan trọng trong việc phân tích và nhận dạng hình ảnh.
+Các phương pháp phổ biến để phát hiện blob trong hình ảnh bao gồm sử dụng các bộ lọc Gaussian, Laplacian, hoặc Difference-of-Gaussian (DoG) để tìm ra các vùng có biên cạnh hoặc đỉnh (peak) cục bộ, thường là đặc trưng của các blob. 
+
+PP DoG:
+1. DoG at multi-octaves: Trình bày về việc sử dụng DoG tại nhiều tỷ lệ khác nhau (multi-octaves) để phát hiện các điểm đặc trưng ở các tỷ lệ khác nhau trong hình ảnh. Việc này giúp đảm bảo tính chất scale-invariant của phương pháp SIFT.
+2. Scale-Space Extrema: Mô tả về việc chọn tất cả các điểm cực trị trong không gian tỷ lệ, và cách thức chọn các điểm này dựa trên các điểm cực trị của DoG trong không gian không gian và không gian tỷ lệ.
+3. Orientation assignment: Giải thích về cách gán hướng cho các điểm đặc trưng đã được chọn, thông qua việc tạo histogram của hướng gradient cục bộ và gán hướng cơ bản tại đỉnh của histogram đã được làm mịn.
+
+
+Local Descriptor là một phương pháp để mô tả các đặc trưng cục bộ của hình ảnh. Nó được sử dụng để mô tả các vùng nhỏ của hình ảnh, thường là các điểm đặc trưng được phát hiện bằng các phương pháp như SIFT (Scale-Invariant Feature Transform) hoặc SURF (Speeded Up Robust Features).
+Các local descriptor thường được thiết kế để có tính chất invariance với các biến đổi hình học và ánh sáng, bao gồm các biến đổi như xoay, dịch chuyển, co giãn và thay đổi ánh sáng. Điều này giúp cho các local descriptor có thể được sử dụng để so sánh các đặc trưng giữa các hình ảnh khác nhau, và từ đó, phát hiện và nhận dạng các đối tượng trong hình ảnh.
+Các phương pháp phổ biến để tạo local descriptor bao gồm SIFT, SURF, PCA-SIFT, LBP (Local Binary Pattern), BRISK (Binary Robust Invariant Scalable Keypoints), MSER (Maximally Stable Extremal Regions) và FREAK (Fast Retina Keypoint). Mỗi phương pháp có cách tiếp cận và tính năng riêng, tùy thuộc vào mục đích sử dụng và đặc tính của hình ảnh.
+
+
+SIFT (Scale-Invariant Feature Transform) descriptor formation là quá trình tạo ra mô tả đặc trưng cho các điểm đặc trưng được phát hiện bằng phương pháp SIFT trong xử lý hình ảnh. Tức sau khi tìm ra điểm đặc trưng bằng SIFT r thì mô tả nó. Dưới đây là chi tiết về quá trình này:
+1) Tính toán độ dốc (gradient) đối với hướng của điểm đặc trưng
+Đầu tiên, tính toán hướng gradient của các điểm ảnh xung quanh điểm đặc trưng. Điều này giúp xác định hướng cục bộ của các cạnh và đặc trưng trong vùng lân cận của điểm đặc trưng.
+2) Tạo histogram hướng gradient trong các hướng khác nhau trên vùng mẫu:
+Vùng mẫu xung quanh điểm đặc trưng được chia thành các ô lưới, và trong mỗi ô lưới, tính toán histogram hướng gradient. Điều này giúp biểu diễn phân phối hướng gradient xung quanh điểm đặc trưng.
+3) Làm mịn hình ảnh sử dụng bộ lọc Gaussian:
+Để tránh sự thay đổi đột ngột trong mô tả đặc trưng với sự thay đổi nhỏ trong vị trí của cửa sổ, và để giảm sự ảnh hưởng của gradient ở xa tâm của mô tả, sử dụng bộ lọc Gaussian để làm mịn hình ảnh.
+4) Tính toán mảng histogram hướng gradient:
+Đưa các gradient đã quay vào các histogram hướng gradient cục bộ. Mỗi histogram hướng gradient có một số lượng bin (ví dụ: 8 bin) để biểu diễn hướng gradient.
+5) Tính toán mô tả SIFT:
+Kết hợp tất cả các histogram hướng gradient từ các ô lưới thành một vector mô tả đặc trưng SIFT. Vector này có thể có số chiều lên đến 128, biểu diễn phân phối hướng gradient xung quanh điểm đặc trưng.
+Quá trình này tạo ra một mô tả đặc trưng SIFT cho mỗi điểm đặc trưng, và mô tả này là không đổi theo tỉ lệ, không đổi theo quay, và không đổi theo ánh sáng, làm cho nó rất phù hợp cho việc phát hiện và khớp điểm đặc trưng trong hình ảnh.
+
+Đặc điểm:
+Khả năng chống lại sự thay đổi độ sáng: Mô tả SIFT dựa trên độ dốc, tức là sự khác biệt giữa các giá trị pixel. Điều này có nghĩa là mô tả đã không thay đổi khi có sự thay đổi về độ sáng. Ví dụ, việc thêm 10 vào tất cả các pixel ảnh sẽ tạo ra cùng một mô tả, vì sự khác biệt giữa các pixel vẫn không thay đổi.
+Xử lý sự thay đổi đối lượng (độ tương phản contrast): Trong ảnh có độ tương phản cao hơn, độ lớn của độ dốc tăng theo tỷ lệ tuyến tính. Để sửa đổi cho sự thay đổi về đối lượng, vector biểu diễn mô tả được chuẩn hóa để có độ dài bằng 1.0. Bước chuẩn hóa này giúp làm cho mô tả có khả năng chống lại sự thay đổi về đối lượng ảnh.
+Giảm ảnh hưởng của độ dốc ảnh lớn: Độ dốc ảnh lớn thường xuất phát từ các hiệu ứng ánh sáng 3D không đáng tin cậy như chói sáng. Để giảm ảnh hưởng của những hiệu ứng này, tất cả các giá trị trong vector biểu diễn mô tả được giữ lại sao cho nhỏ hơn hoặc bằng 0.2 (một giá trị được điều chỉnh thực nghiệm). Sau bước giữ lại này, vector được chuẩn hóa một lần nữa. Quá trình này tạo ra một vector khá không đổi đối với sự thay đổi ánh sáng.
+Những bước này đóng góp vào việc làm cho mô tả SIFT có khả năng chống lại sự thay đổi ánh sáng, điều này rất quan trọng cho hiệu suất của nó trong việc khớp và nhận dạng đặc trưng trong hình ảnh.
+
+
+Feature matching
+"Feature matching", chúng ta thấy các phương pháp và kỹ thuật để so khớp các đặc trưng trong hình ảnh. Dưới đây là một số điểm quan trọng:
+Hàm khoảng cách và so khớp đặc trưng: Đầu tiên, chúng ta cần định nghĩa một hàm khoảng cách để so sánh hai mô tả đặc trưng. Có thể sử dụng các phép đo khoảng cách như L1, L2, cosine, Mahalanobis, v.v. để so sánh sự tương đồng giữa các đặc trưng.
+Các phương pháp cải thiện so khớp: Thay vì sử dụng giá trị khoảng cách đơn lẻ, các phương pháp tốt hơn thường áp dụng các ràng buộc bổ sung. Ví dụ, sử dụng tỷ lệ của khoảng cách, ràng buộc không gian giữa các pixel lân cận, hoặc sử dụng phương pháp RANSAC để cải thiện các so khớp.
+
+Voting strategy là một phương pháp được sử dụng trong quá trình so khớp đặc trưng ảnh để tìm ra các điểm ảnh tương đồng giữa hai ảnh. Phương pháp này được sử dụng để giải quyết vấn đề của việc so khớp đặc trưng ảnh, khi một điểm ảnh trong ảnh thứ nhất có thể tương ứng với nhiều điểm ảnh trong ảnh thứ hai.
+Các bước thực hiện của phương pháp Voting strategy bao gồm:
+1. Tìm các điểm đặc trưng trong ảnh thứ nhất và ảnh thứ hai bằng cách sử dụng các phương pháp trích xuất đặc trưng như SIFT, SURF, hoặc ORB.
+2. So khớp các điểm đặc trưng giữa hai ảnh bằng cách sử dụng các phương pháp như K-nearest neighbor hoặc RANSAC.
+3. Tính toán các vector tịnh tiến và xoay để biến đổi ảnh thứ hai để phù hợp với ảnh thứ nhất.
+4. Sử dụng phương pháp Voting strategy để tính toán điểm ảnh tương đồng giữa hai ảnh. Các điểm ảnh tương đồng được tính bằng cách đếm số lượng các điểm đặc trưng trong ảnh thứ hai mà tương ứng với mỗi điểm đặc trưng trong ảnh thứ nhất.
+5. Chọn các điểm ảnh có số lượng phiếu bầu cao nhất làm các điểm tương đồng giữa hai ảnh.
+Phương pháp Voting strategy giúp cải thiện độ chính xác của quá trình so khớp đặc trưng ảnh và giảm thiểu số lượng các sai sót trong quá trình so khớp.
+
+Việc đánh giá hiệu suất của một hệ thống so khớp đặc trưng có thể sử dụng các phương pháp như giải quyết vấn đề tối ưu hoá hoặc xây dựng một "đặc trưng" toàn cục từ các đặc trưng cục bộ để đánh giá hiệu suất.
+
+
+"Bag-of-words" là một phương pháp phổ biến trong xử lý ngôn ngữ tự nhiên và xử lý ảnh, đặc biệt là trong việc biểu diễn và nhận dạng đối tượng trong ảnh. Phương pháp này cũng được sử dụng trong học máy và trí tuệ nhân tạo. Trong ngữ cảnh của xử lý ảnh, "Bag-of-words" (BoW) được sử dụng để biểu diễn các đặc trưng cục bộ của ảnh dưới dạng một tập hợp các "visual words" hoặc "visual vocabulary". Quá trình này bao gồm các bước sau:
+1. Trích xuất các đặc trưng cục bộ từ ảnh, chẳng hạn như SIFT, SURF, hoặc ORB descriptors.
+2. Xây dựng "visual vocabulary" bằng cách sử dụng phương pháp nhóm cụm (clustering) trên tập hợp các đặc trưng cục bộ đã trích xuất từ nhiều ảnh. Mỗi cụm sẽ đại diện cho một "visual word".
+3. Biểu diễn mỗi ảnh bằng một vector tần suất xuất hiện của các "visual words" trong "visual vocabulary". Vector này thường được gọi là "bag-of-words vector".
+=> Quantize features using visual vocabulary -> Represent images by frequencies of “visual words”. 
+
+
+
+# Segmentation
+Image segmentation là quá trình chia hình ảnh thành các phần vùng khác nhau dựa trên các đặc trưng như màu sắc, cường độ, texture, hoặc sự liên kết giữa các pixel. Quá trình này giúp phân biệt các vùng khác nhau trong hình ảnh, từ đó tạo ra các kết quả hữu ích cho việc phân tích và hiểu hình ảnh.
+Ứng dụng của image segmentation rất đa dạng, bao gồm:
+1. Nhận diện đối tượng: Phân biệt và nhận diện các đối tượng trong hình ảnh, giúp trong việc xác định vị trí và đặc tính của chúng.
+2. Phân tích hình ảnh y tế: Hỗ trợ trong việc phát hiện và phân tích các cấu trúc trong hình ảnh y tế, như phân biệt các cơ quan trong cơ thể hoặc xác định các bất thường trong hình ảnh chụp cắt lớp.
+3. Xác định biên trong hệ thống theo dõi chuyển động hoặc hệ thống stereo: Giúp xác định ranh giới giữa các vùng khác nhau trong hình ảnh, hỗ trợ trong việc theo dõi chuyển động hoặc xác định khoảng cách.
+4. Phân loại hình ảnh vệ tinh: Hỗ trợ trong việc phân loại các vùng đất, nước, hay các đối tượng khác trong hình ảnh vệ tinh.
+
+• Segmentation based on pixel classification
+Thresholding là phương pháp chuyển đổi hình ảnh từ ảnh xám sang ảnh nhị phân bằng cách chọn một ngưỡng (threshold) và gán giá trị 0 hoặc 1 cho mỗi pixel tương ứng với giá trị của nó so với ngưỡng đó. 
+Basic global thresholding thì hình ảnh được chuyển đổi thành ảnh nhị phân bằng cách sử dụng một ngưỡng duy nhất. Cụ thể, các điểm ảnh có giá trị lớn hơn ngưỡng sẽ được gán giá trị cao (ví dụ: 255), trong khi các điểm ảnh có giá trị nhỏ hơn ngưỡng sẽ được gán giá trị thấp (ví dụ: 0).
+Multi-threshold là chia nhiều ngưỡng thì ảnh có nhiều màu hơn
+
+Cách lựa chọn ngưỡng (threshold) trong quá trình chuyển đổi hình ảnh sang ảnh nhị phân bằng phương pháp thresholding. Các phương pháp lựa chọn ngưỡng bao gồm:
+- Giá trị trung bình của các giá trị mức xám.
+- Giá trị trung vị giữa giá trị mức xám nhỏ nhất và lớn nhất.
+- Một giá trị cân bằng giữa cả hai phần của histogram.
+
+Choice of thresholds (optimal) là cách lựa chọn ngưỡng tối ưu trong trường hợp có hai vùng (nền và đối tượng) trong hình ảnh. Các phương pháp lựa chọn ngưỡng tối ưu bao gồm:
+- Xác định xác suất lỗi trong các lớp và tìm ngưỡng dẫn đến lỗi tối thiểu.
+- Sử dụng các phương pháp thống kê và mô hình toán học để xác định ngưỡng tối ưu.
+
+VD 1 thuật toán tự động lựa chọn ngưỡng đơn giản, bao gồm các bước sau:
+- Bước 1: Chọn một giá trị ngưỡng ban đầu (ví dụ: giá trị trung bình của các giá trị mức xám).
+- Bước 2: Chia hình ảnh thành hai nhóm pixel dựa trên giá trị ngưỡng được chọn ở bước 1.
+- Bước 3: Tính giá trị trung bình của các pixel trong mỗi nhóm.
+- Bước 4: Tính giá trị trung bình mới bằng cách lấy trung bình cộng của hai giá trị trung bình ở bước 3.
+- Bước 5: Lặp lại các bước 2 đến 4 cho đến khi giá trị ngưỡng không thay đổi nhiều.
+Có nhiều phương pháp tự động lựa chọn ngưỡng khác nhau, bao gồm phương pháp Otsu, phương pháp Kittler, phương pháp K-means, và nhiều phương pháp khác. Tuy nhiên, không có một phương pháp nào là tốt nhất cho tất cả các ứng dụng, và phương pháp nào được sử dụng phụ thuộc vào từng trường hợp cụ thể.
+
+Otsu algorithm, còn được gọi là phương pháp ngưỡng hóa Otsu, là một phương pháp tự động xác định ngưỡng tối ưu để chia hình ảnh thành các vùng nhóm dựa trên độ sáng. Phương pháp này được phát triển bởi Nobuyuki Otsu vào năm 1979 và thường được sử dụng trong xử lý hình ảnh và thị giác máy tính.
+Ý tưởng cơ bản của Otsu algorithm là tìm ngưỡng sao cho phương sai giữa hai lớp (hoặc giữa lớp và nền) là lớn nhất có thể. Khi ngưỡng này được áp dụng, hình ảnh sẽ được chia thành hai phần, một phần được coi là vùng quan tâm và một phần được coi là nền.
+Quá trình này giúp tách biệt vùng quan tâm và nền một cách tự động và hiệu quả, đặc biệt trong các trường hợp khi không có thông tin trước về ngưỡng tối ưu. Otsu algorithm thường được sử dụng trong các ứng dụng như nhận dạng vật thể, nhận dạng ký tự, và xử lý hình ảnh y tế.
+
+Adaptive thresholding là một phương pháp ngưỡng hóa trong xử lý hình ảnh, nơi ngưỡng được xác định dựa trên từng vùng nhỏ của hình ảnh thay vì sử dụng một ngưỡng cố định cho toàn bộ hình ảnh. Phương pháp này thường được sử dụng khi hình ảnh có độ sáng không đồng đều hoặc có nhiễu, và khi việc sử dụng một ngưỡng cố định không hiệu quả. Ngược với global thresholding
+
+
+Clustering-based segmentation là một phương pháp trong xử lý ảnh để phân nhóm các pixel thành các vùng tương tự dựa trên các thuộc tính của chúng, chẳng hạn như mức xám, giá trị màu sắc, hoặc các thuộc tính khác. Quá trình này giúp chia hình ảnh thành các vùng có tính đồng nhất về thuộc tính, và từ đó tạo ra các vùng tương đối đồng nhất trong hình ảnh.
+Các thuật toán phân nhóm (clustering algorithms) được sử dụng để thực hiện việc phân nhóm các pixel vào các vùng tương tự. Các thuật toán phân nhóm phổ biến bao gồm K-means clustering, Mean-Shift Clustering, Expectation-Maximization Clustering, Watershed Segmentation, Graph Cuts (Spectral clustering), và Normalized cuts, cùng với nhiều phương pháp khác.
+Sau khi các pixel được phân nhóm thành các vùng tương tự, thông tin về các vùng này có thể được sử dụng để tạo ra các đường biên (boundary) hoặc để xác định các ngưỡng (thresholds) cho quá trình chuyển đổi hình ảnh sang ảnh nhị phân. Các vùng này cũng có thể được sử dụng để thực hiện các tác vụ như nhận dạng đối tượng, phân tích cấu trúc, hoặc xử lý hình ảnh tiếp theo.
+
+Phương pháp dựa trên pixel (Pixel-based approach) trong xử lý ảnh là một phương pháp tiếp cận để thực hiện việc phân đoạn hình ảnh dựa trên các thuộc tính của từng pixel. Dưới đây là một số ưu và nhược điểm của phương pháp này:
+Ưu điểm:
+1. Đơn giản và nhanh chóng: Phương pháp dựa trên pixel thường dễ triển khai và tính toán nhanh chóng, đặc biệt là trong trường hợp của các phương pháp như thresholding và các phép toán trên pixel đơn giản.
+2. Linh hoạt: Có thể áp dụng cho nhiều loại hình ảnh khác nhau, từ ảnh mức xám đến ảnh màu sắc và ảnh đa dạng thuộc tính khác nhau.
+Nhược điểm:
+1. Không tạo ra các vùng kết nối: Phương pháp dựa trên pixel thường không tạo ra các vùng liên kết hoặc các vùng kết nối mà thường cần thiết cho việc nhận dạng và phân tích hình ảnh.
+2. Yêu cầu xử lý sau: Kết quả từ phương pháp này thường cần phải được xử lý sau để loại bỏ các pixel đơn lẻ hoặc kết hợp các vùng gần nhau thành các vùng lớn hơn và kết nối hơn.
+3. Không hiệu quả với ảnh phức tạp: Trong trường hợp của các hình ảnh phức tạp, phương pháp dựa trên pixel có thể không đủ linh hoạt để tạo ra kết quả phân đoạn chính xác và đáng tin cậy.
+
+Segmentation as clustering giải thích về cách phân nhóm các pixel trong hình ảnh thành các vùng tương tự bằng cách sử dụng các thuật toán phân nhóm (clustering algorithms). Có nhiều cách phân nhóm, 3 VD:
+1. Phân nhóm các pixel dựa trên độ tương đồng về mức xám (intensity similarity): Trong trường hợp này, không gian đặc trưng chỉ có một chiều, là giá trị mức xám của từng pixel. Các pixel có giá trị mức xám tương tự nhau sẽ được phân nhóm vào cùng một vùng.
+2. Phân nhóm các pixel dựa trên độ tương đồng về mức xám và vị trí (intensity+position similarity): Trong trường hợp này, không gian đặc trưng bao gồm cả giá trị mức xám và vị trí của từng pixel. Các pixel có giá trị mức xám và vị trí tương tự nhau sẽ được phân nhóm vào cùng một vùng.
+3. Phân nhóm các pixel dựa trên độ tương đồng về đặc trưng texture (texture similarity): Trong trường hợp này, không gian đặc trưng bao gồm các đặc trưng texture của từng pixel, được tính bằng cách sử dụng một bộ lọc (filter bank). Các pixel có đặc trưng texture tương tự nhau sẽ được phân nhóm vào cùng một vùng.
+
+
+• Region-based segmentation
+Phương pháp phân đoạn hình ảnh dựa trên việc tạo ra các vùng dựa trên tiêu chí đồng nhất và kết nối của các pixel trong hình ảnh.
+1. Tạo vùng dựa trên tiêu chí đồng nhất: Phương pháp này tập trung vào việc tạo ra các vùng trong hình ảnh sao cho mỗi vùng là đồng nhất về thuộc tính nào đó, chẳng hạn như độ sáng, màu sắc, phạm vi, hoặc texture. Điều này giúp tạo ra các vùng trong hình ảnh mà mỗi vùng có tính chất tương tự nhau về thuộc tính cụ thể.
+2. Tạo vùng dựa trên tiêu chí kết nối: Không chỉ đồng nhất về thuộc tính, mà các pixel trong mỗi vùng cũng cần phải kết nối với nhau. Điều này đảm bảo rằng mỗi vùng được tạo ra là một tập hợp các pixel liên tục và không bị chia cắt.
+Các thuật toán phổ biến được sử dụng trong phương pháp phân đoạn dựa trên vùng, bao gồm:
+- Region growing: Bắt đầu từ một điểm (seed) và thêm các pixel láng giềng theo một tiêu chí nhất định.
+- Split and merge algorithm: Phân chia hình ảnh thành các vùng nhỏ hơn, sau đó kết hợp các vùng có đặc tính tương tự để tạo ra các vùng lớn hơn.
+
+
+Thuật toán Region growing là một phương pháp phân đoạn hình ảnh dựa trên việc tạo ra các vùng dựa trên việc mở rộng từ các điểm khởi đầu gọi là seed theo một tiêu chí nhất định. Cụ thể, thuật toán này hoạt động như sau:
+1. Chọn điểm khởi đầu (seed): Thuật toán bắt đầu từ một hoặc nhiều điểm khởi đầu trên hình ảnh, có thể được chọn thủ công hoặc tự động. Điểm khởi đầu này thường được chọn trong các vùng có tính đồng nhất cao, chẳng hạn như các vùng có cùng màu sắc, độ sáng, hoặc texture.
+2. Mở rộng vùng: Từ điểm khởi đầu, thuật toán mở rộng vùng bằng cách thêm các pixel láng giềng vào vùng theo một tiêu chí nhất định. Tiêu chí này có thể là đồng nhất về màu sắc, độ sáng, hoặc các thuộc tính khác của pixel.
+3. Lặp lại quá trình mở rộng: Quá trình mở rộng vùng có thể được lặp lại cho đến khi không còn pixel nào có thể được thêm vào vùng hoặc khi đạt được một điều kiện dừng nhất định.
+
+Có thể Region growing with multi-seeds
+
+
+Thuật toán Split-and-Merge là một phương pháp phân đoạn hình ảnh dựa trên việc chia nhỏ hình ảnh thành các vùng con (split) và sau đó kết hợp các vùng con đồng nhất thành các vùng lớn hơn (merge). Phương pháp này thường được sử dụng để tạo ra các vùng đồng nhất trong hình ảnh dựa trên các tiêu chí nhất định. Cụ thể, thuật toán Split-and-Merge hoạt động như sau:
+1. Split (Chia nhỏ):
+   - Bắt đầu với toàn bộ hình ảnh, thuật toán chia nhỏ hình ảnh thành các vùng con nhỏ hơn dựa trên một tiêu chí nhất định, chẳng hạn như độ tương đồng về màu sắc, độ sáng, hoặc texture.
+2. Merge (Kết hợp):
+   - Sau khi các vùng con được tạo ra, thuật toán kết hợp các vùng con đồng nhất thành các vùng lớn hơn dựa trên một tiêu chí nhất định, chẳng hạn như độ tương đồng về màu sắc, độ sáng, hoặc texture.
+3. Lặp lại quá trình chia nhỏ và kết hợp:
+   - Quá trình chia nhỏ và kết hợp có thể được lặp lại cho đến khi đạt được các vùng đồng nhất theo yêu cầu hoặc khi không còn thay đổi nào đáng kể trong quá trình phân đoạn.
+
+
+• Edge-based segmentation
+Edge-based segmentation là một phương pháp trong xử lý hình ảnh để phân đoạn hình ảnh dựa trên việc xác định các ranh giới (edge) hoặc đường biên trong hình ảnh. Các đường biên này thường tương ứng với sự thay đổi đột ngột trong độ sáng hoặc cường độ màu sắc trong hình ảnh, và thường được coi là biểu diễn của ranh giới giữa các vùng khác nhau trong hình ảnh.
+
+Phương pháp phân đoạn Watershed được giải thích như sau:
+Trực quan hóa ảnh 2D thành 3D: Ảnh 2D được biểu diễn như một hình dạng 3D bằng cách sử dụng mức độ xám làm chiều thứ ba. Điều này giúp hiểu rõ hơn về cấu trúc của ảnh.
+Tạo "hố" trong hình dạng: Giá trị của ảnh được đảo ngược (lật ngược) để tạo ra "hố" trong hình dạng.
+Đổ nước vào các "hố": Các "hố" được điền nước để tạo ra một hình ảnh tương tự như việc đổ nước vào các hố trong thực tế.
+Phân đoạn Watershed: Quá trình phân đoạn Watershed sẽ tạo ra các vùng phân đoạn dựa trên việc nước tràn từ các "hố" khác nhau. Các vùng này tương ứng với các vùng cần phân đoạn trong ảnh gốc.
+Kết quả phân đoạn: Kết quả cuối cùng là việc phân chia ảnh thành các vùng dựa trên việc nước tràn từ các "hố" và tạo ra các ranh giới tự nhiên giữa các vùng.
+Phương pháp phân đoạn Watershed được sử dụng để phân chia ảnh thành các vùng dựa trên cấu trúc và đặc điểm của ảnh, giúp tạo ra các vùng phân đoạn tự nhiên và chính xác.
+
+
+
+# Motion Detection
+Motion Detection phát hiện chuyển động, đề cập đến việc cảm nhận sự di chuyển vật lý trong một khu vực cụ thể. Nó nhấn mạnh rằng chuyển động có thể được phát hiện bằng cách đo lường sự thay đổi về tốc độ hoặc vector của một đối tượng. Mục tiêu của việc phát hiện chuyển động được xác định là:
+1. Xác định các đối tượng đang di chuyển
+2. Phát hiện các mẫu hoạt động bất thường
+3. Tính toán quỹ đạo của các đối tượng đang di chuyển
+Ứng dụng của việc phát hiện chuyển động, bao gồm an ninh trong nhà/ngoài trời, phát hiện tội phạm trong thời gian thực, giám sát giao thông, và các hệ thống phân tích video thông minh.
+
+Motion field là sự di chuyển vật lý thực sự của các đối tượng, trong khi optical flow là một ước lượng về sự di chuyển này dựa trên sự thay đổi cường độ hình ảnh.
+
+Phần "Optical flow constraint", "Lucas-Kanade algorithm", "Matrix form", "Computing gradients in X-Y-T", "The aperture problem", "Error function", và "Horn-Schunck algorithm" trong slide trình bày về các khái niệm và thuật toán liên quan đến việc ước lượng chuyển động quang học (optical flow) trong xử lý hình ảnh. Dưới đây là giải thích chi tiết về từng phần:
+- Optical flow constraint (Ràng buộc dòng quang học):
+Ràng buộc dòng quang học là một phương trình xấp xỉ được sử dụng để ước lượng vector dòng (flow vectors) trong một chuỗi hình ảnh.
+Phương trình này giả định rằng cường độ hình ảnh là không đổi theo thời gian và sử dụng giả định này để ước lượng chuyển động của các đối tượng trong hình ảnh.
+- Lucas-Kanade algorithm (Thuật toán Lucas-Kanade):
+Đây là một thuật toán được sử dụng để ước lượng dòng quang học trong các hình ảnh.
+Thuật toán này giả định rằng cường độ hình ảnh không đổi trong một cửa sổ nhỏ và sử dụng phương pháp bình phương tối thiểu để ước lượng chuyển động.
+- Matrix form (Dạng ma trận):
+Các phương trình và thuật toán được biểu diễn dưới dạng ma trận để tính toán một cách hiệu quả.
+- Computing gradients in X-Y-T (Tính toán độ dốc theo trục X-Y-T):
+Quá trình tính toán độ dốc của hình ảnh theo các trục không gian và thời gian để ước lượng chuyển động.
+- The aperture problem (Vấn đề khe hở):
+Đây là một vấn đề trong việc ước lượng chuyển động, nơi mà thông tin chuyển động không thể được xác định một cách chính xác do hạn chế của dữ liệu.
+- Error function (Hàm lỗi):
+Hàm lỗi được sử dụng để đo lường sự khác biệt giữa dòng quang ước lượng và dòng quang thực tế.
+- Horn-Schunck algorithm (Thuật toán Horn-Schunck):
+Đây là một thuật toán toàn cục được sử dụng để ước lượng dòng quang và giải quyết vấn đề khe hở trong việc ước lượng chuyển động.
+=> Nch là thuật toán để ước lượng chuyển động là dòng ánh sáng thay đổi ở các ảnh
+
+
+Background Subtraction là phương pháp tách nền trong xử lý ảnh. Phương pháp này sử dụng một hình ảnh nền tham chiếu để so sánh với hình ảnh hiện tại chứa đối tượng cần quan sát. Các điểm ảnh khác biệt giữa hai hình ảnh này được phát hiện và phân loại là các đối tượng di chuyển. Phương pháp này có thể sử dụng đơn giản là sự khác biệt giữa hai hình ảnh, hoặc có thể sử dụng các phương pháp thống kê như mô hình hỗn hợp Gaussian để xác định các điểm ảnh không thuộc nền. Các kỹ thuật xử lý tiếp theo sau đó có thể bao gồm lọc để loại bỏ nhiễu và nhóm các điểm ảnh kề nhau để xác định các đối tượng.
+
+
+Statistical Methods là sử dụng các phương pháp thống kê để ước lượng chuyển động và theo dõi đối tượng trong hình ảnh. Xét 2 pp cụ thể:
+- Pixel statistics: Đây là việc tính toán trung bình và độ lệch chuẩn của giá trị màu sắc và mức xám của các pixel trong hình ảnh. Thống kê pixel có thể được sử dụng để ước lượng chuyển động và phát hiện các đối tượng di chuyển trong hình ảnh.
+- Gaussian Mixture Model: Đây là một phương pháp thống kê được sử dụng để mô hình hóa giá trị màu sắc của một pixel như là một sự pha trộn của các phân phối Gaussian. Mô hình này có thể được sử dụng để phát hiện các đối tượng di chuyển trong hình ảnh bằng cách so sánh giá trị pixel với phân phối nền.
+Mahalanobis distance dùng trong Gaussian Mixture Model: Đây là một phép đo khoảng cách thống kê được sử dụng để xác định sự khác biệt giữa giá trị pixel và phân phối nền. Nếu khoảng cách Mahalanobis vượt quá một ngưỡng, pixel có thể được coi là thuộc về đối tượng di chuyển.
+
+
+Simple Motion Model dùng công thức cơ bản: s0 + vt + at^2/2 
+Có thể predict vị trí tiếp theo của object at time t nếu biết position, velocity và gia tốc. Tuy nhiên tùy vào object có ở predicted location k mà xử lý tương ứng. 
+
+
+Thuật toán Kalman Filter để ước lượng chuyển động và theo dõi vật thể trong hình ảnh
+Kalman Filter là một thuật toán xử lý dữ liệu đệ quy, được sử dụng để ước lượng các thông số của một hệ thống dựa trên các đo lường không chắc chắn và nhiễu. Nó có thể tạo ra ước lượng tối ưu của các đại lượng mong muốn dựa trên tập hợp các đo lường trước đó mà không cần lưu trữ tất cả các đo lường trước đó và xử lý lại tất cả dữ liệu ở mỗi bước thời gian. Do đó nó có nhiều ưu điểm khi sử dụng trong việc theo dõi hạt particle.
+
+Thuật toán này sử dụng mô tả ma trận của trạng thái hệ thống, mô hình và đo lường để dự đoán và điều chỉnh trạng thái của hệ thống. Kalman Filter là một phương pháp tiến triển, không cần phải lưu trữ tất cả các ma trận lớn và xử lý tất cả dữ liệu mỗi bước thời gian. Thuật toán này xử lý một cách chính xác với nhiễu hệ thống, bao gồm việc dự đoán và sửa chữa các nhiễu .
+
+Thuật toán này giả định rằng hệ thống là tuyến tính và nhiễu là nhiễu Gaussian trắng, và với các giả định này, Kalman Filter là bộ lọc tối ưu.
+
+Thuật ngữ và các yếu tố liên quan trong Kalman Filter có thể được giải thích như sau:
+- Measurements y[k]:
+Đây là các dữ liệu đo lường được thu thập từ hệ thống hoặc môi trường. Trong ngữ cảnh của theo dõi và ước lượng chuyển động, các đo lường này có thể là vị trí, tốc độ, hoặc các thông số khác của vật thể hoặc hệ thống.
+- System state x[k]:
+Đây là trạng thái của hệ thống tại thời điểm k, bao gồm thông tin về vị trí, vận tốc và các thông số khác của vật thể hoặc hệ thống.
+- Observation matrix H[k]:
+Đây là ma trận quan sát, mô tả cách mà trạng thái của hệ thống liên quan đến các đo lường được thực hiện. Nó giúp xác định mối quan hệ giữa trạng thái của hệ thống và dữ liệu đo lường.
+- Evolution matrix A[k]:
+Đây là ma trận tiến hóa, mô tả cách mà trạng thái của hệ thống phát triển từ một thời điểm sang thời điểm tiếp theo. Nó giúp dự đoán trạng thái của hệ thống dựa trên trạng thái hiện tại và các thông số khác.
+- Measurement noise n[k]:
+Đây là nhiễu trong quá trình đo lường, có thể là do sai số đo lường, nhiễu từ môi trường hoặc từ các nguồn khác. Nhiễu này ảnh hưởng đến chất lượng của dữ liệu đo lường.
+- Process noise v[k]:
+Đây là nhiễu trong quá trình tiến hóa của hệ thống, có thể bao gồm các yếu tố không chắc chắn trong quá trình phát triển của hệ thống, như ma sát, nhiễu từ môi trường, hoặc các yếu tố khác.
+Các yếu tố này cùng nhau tạo nên một mô hình toán học để ước lượng và dự đoán trạng thái của hệ thống dựa trên dữ liệu đo lường và các yếu tố không chắc chắn. Kalman Filter sử dụng các ma trận và phương trình để tính toán một cách hiệu quả và đưa ra ước lượng tối ưu về trạng thái của hệ thống.
+
+
+Đó là single motion, nếu chuyển động phức tạp như bounce ball chẳng hạn thì phải dùng multiple models.
+
+Mean Shift là một thuật toán được sử dụng để theo dõi vật thể trong hình ảnh dựa trên phân phối màu sắc và cấu trúc của vật thể. Đây là một phương pháp hiệu quả để theo dõi các vật thể không cố định hoặc không tuân theo mô hình chuyển động cụ thể
+
+- Cơ chế: Mục tiêu của Mean Shift là tìm ra vùng có mật độ cao nhất trong phân phối dữ liệu, đặc biệt là trong không gian màu sắc hoặc không gian đặc trưng của vật thể.
+Thuật toán Mean-shift được sử dụng để theo dõi chuyển động của một nhóm các đặc trưng quan tâm. Nó bắt đầu bằng cách chọn phân bố đặc trưng để đại diện cho một đối tượng, sau đó sử dụng cửa sổ Mean-shift để theo dõi chuyển động của đối tượng qua các khung hình bằng cách di chuyển một cửa sổ trên phân bố đặc trưng và tìm kiếm vùng có mật độ cao nhất. Cửa sổ sẽ di chuyển đến vị trí mới, nơi mật độ cao hơn, và quá trình này sẽ tiếp tục cho đến khi đạt được vùng có mật độ cao nhất. 
+Bắt đầu từ vị trí ban đầu của vật thể, thuật toán Mean Shift sẽ di chuyển cửa sổ theo hướng của trung bình có trọng số của phân phối dữ liệu. Quá trình này sẽ tiếp tục cho đến khi đạt được điểm cực đại cục bộ của phân phối dữ liệu, tức là vùng có mật độ cao nhất.
+
+Việc lựa chọn và theo dõi đối tượng được thực hiện đồng thời bằng cách duy trì một phân bố các vị trí có khả năng của đối tượng và trọng số tương ứng. Sau đó, thuật toán sẽ dự đoán các vị trí tiếp theo của đối tượng, tìm kiếm các vị trí tốt nhất bằng cách tối đa hóa một hàm tương đồng và cập nhật phân bố của đối tượng.
+
+Vùng quan tâm của vật thể được biểu diễn dưới dạng phân phối xác suất (PDF) trong không gian đặc trưng, chẳng hạn như không gian màu sắc.
+
+- Ưu điểm:
+Mean Shift không yêu cầu mô hình chuyển động cụ thể và có thể áp dụng cho việc theo dõi các vật thể không cố định hoặc có chuyển động phức tạp.
+Nó cũng không bị ảnh hưởng bởi sự thay đổi về kích thước, hình dạng hoặc màu sắc của vật thể.
+
+
+
